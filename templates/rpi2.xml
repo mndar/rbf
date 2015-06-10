@@ -1,0 +1,44 @@
+<template>    
+    <board>rpi2</board>
+    <image size="4G" type="raw" path="rpi2-centos-image.img"></image>
+    <partitions>
+        <partition index="1" size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition index="2" size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition index="3" size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <group>@core</group>
+        <package>net-tools</package>
+    </packages>
+
+    <uboot>none</uboot>
+    <rootfiles>files/boot.tar</rootfiles>
+    <firmware>files/firmware</firmware>
+    <kernel type="none">
+    </kernel>    
+
+    <config>
+        <hostname>rpi2</hostname>
+        <selinux>disabled</selinux>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>centos</distro>
+    <repos>
+        <repo name="c7buildroot" path="http://armv7.dev.centos.org/repodir/c7-buildroot/"></repo>
+        <repo name="c7pass1" path="http://armv7.dev.centos.org/repodir/c7-pass-1/"></repo>
+        <repo name="comps" path="http://armv7.dev.centos.org/repodir/comps/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <loopdevice>/dev/loop0</loopdevice>
+    <extlinuxconf>false</extlinuxconf>
+    
+ </template>
+ 
