@@ -1,4 +1,8 @@
 RootFS Build Factory
+Being developed for Google Summer Of Code 2015
+Organization: CentOS
+Written By: Mandar Joshi [emailmandar at gmail.com]
+Mentor: Ian McLeod [imcleod at redhat.com]
 
 This project is still in the development stage.
 I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
