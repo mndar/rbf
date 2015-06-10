@@ -83,3 +83,4 @@ Thus making your new kernel bootable.
     cp yumplugins/extlinuxconf.conf /etc/yum/pluginconf.d/
     
 
+Note: The files in the directory files/* have been taken from Fedora 21
