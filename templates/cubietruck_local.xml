@@ -1,6 +1,6 @@
 <template>    
     <board>cubietruck</board>
-    <image size="4G" type="raw" path="cubietruck-centos-image.img"></image>
+    <image size="4G" type="raw" path="cubietruck-centos-image-local.img"></image>
     <partitions>
         <partition index="1" size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
         <partition index="2" size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
@@ -37,7 +37,6 @@
         <repo name="comps" path="ftp://192.168.1.3/comps/"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
-    <loopdevice>/dev/loop0</loopdevice>
     <extlinuxconf>true</extlinuxconf>
     
  </template>

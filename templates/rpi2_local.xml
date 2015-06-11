@@ -37,7 +37,6 @@
         <repo name="comps" path="ftp://192.168.1.3/comps/"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
-    <loopdevice>/dev/loop0</loopdevice>
     <extlinuxconf>false</extlinuxconf>
     
  </template>

@@ -46,7 +46,6 @@
         <repo name="updates" path="ftp://192.168.1.3/updates"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
-    <loopdevice>/dev/loop0</loopdevice>
     <extlinuxconf>true</extlinuxconf>
     
  </template>

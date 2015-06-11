@@ -37,7 +37,6 @@
         <repo name="comps" path="http://armv7.dev.centos.org/repodir/comps/"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
-    <loopdevice>/dev/loop0</loopdevice>
     <extlinuxconf>false</extlinuxconf>
     
  </template>

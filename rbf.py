@@ -147,7 +147,7 @@ class BoardTemplateParser():
         self.boardName = self.getTagValue(self.boardDom,"board")        
         self.workDir = self.getTagValue(self.boardDom,"workdir")        
         self.finalizeScript = self.getTagValue(self.boardDom,"finalizescript")
-        self.loopDevice = self.getTagValue(self.boardDom,"loopdevice")
+        self.loopDevice = subprocess.check_output(['losetup','-f']).strip()
         self.selinuxConf = self.getTagValue(self.boardDom,"selinux")
         self.etcOverlay = self.getTagValue(self.boardDom,"etcoverlay")
         self.linuxDistro = self.getTagValue(self.boardDom,"distro")
@@ -167,8 +167,7 @@ class BoardTemplateParser():
         return "if [ $? != 0 ]; then echo [INFO ]  " + self.RbfScriptErrors[exitCode] + ";  read -p \"Press Enter To Continue\"; fi\n\n"
         
     def createImage(self):
-        """Creates Image File"""
-        self.loopDevice = subprocess.check_output(['losetup','-f']).strip()
+        """Creates Image File"""        
         self.rbfScript.write("echo [INFO ]   $0 Detacing Loop Device If Busy: " + self.loopDevice+"\n")
         self.rbfScript.write(self.delDeviceIfExists(self.loopDevice))
         logging.info("Creating Image File")
@@ -481,6 +480,8 @@ class BoardTemplateParser():
             for k in kernelDom:                
                 logging.info("Using Stock Kernel")
                 self.packages.append('kernel')
+                #Required for generation of generic initramfs
+                self.packages.append('dracut-config-generic')
         elif self.kernelType == "none":
             logging.info("Not Installing Any Kernel")
         
@@ -678,6 +679,10 @@ class BoardTemplateParser():
         
 if ( __name__ == "__main__"): 
     initLogging()
+    if os.getuid() != 0:
+        logging.error("You need to be root to use RootFS Build Factory")
+        sys.exit(BoardTemplateParser.NOT_ROOT)
+        
     if len(sys.argv) != 3:
         printUsage()
         sys.exit(BoardTemplateParser.INCORRECT_ARGUMENTS)
@@ -692,9 +697,7 @@ if ( __name__ == "__main__"):
     if action == "build" and not platform.uname()[5].startswith("arm"):
         logging.error("This script is not meant to be run on " + platform.uname()[5])
         
-    if action == "build" and os.getuid() != 0:
-        logging.error("You need to be root to build an image using RootFS Build Factory")
-        sys.exit(BoardTemplateParser.NOT_ROOT)
+    
         
     if checkCommandExistsAccess(['echo', 'fallocate','parted','read','losetup','mount','mkdir','rm','cat','cp','rpm','yum','sed','chroot','partprobe']):
         logging.info("All Commands Found. Continuing")
