@@ -1,15 +1,17 @@
 <template>    
     <board>rpi2</board>
-    <image size="2G" type="raw" path="rpi2-image.img"></image>
+    <image size="4G" type="raw" path="rpi2-image.img"></image>
     <partitions>
-        <partition index="1" size="100M" type="primary" fs="vfat" mountpoint="/boot"></partition>
-        <partition index="2" size="10M" type="primary" fs="swap" mountpoint="swap"></partition>
-        <partition index="3" size="1500M" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition index="1" size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>        
+        <partition index="2" size="1496M" type="extended" fs="" mountpoint=""></partition>
+        <partition index="3" size="2000M" type="logical" fs="ext4" mountpoint="/"></partition>         
+        <partition index="4" size="1000M" type="logical" fs="ext4" mountpoint="/mnt"></partition>
+        <partition index="5" size="496M" type="logical" fs="ext4" mountpoint="/opt"></partition>
     </partitions>
     
     <packages>
-        <group></group>
-        <package>bash,systemd</package>
+        <group>@core</group>
+        <package></package>
     </packages>
 
     <uboot>none</uboot>
@@ -23,7 +25,7 @@
         <selinux>disabled</selinux>
         <network>
             <interface name="eth0" config="static">
-                <ipaddress>192.168.1.202</ipaddress>
+                <ipaddress>192.168.1.151</ipaddress>
                 <subnetmask>255.255.255.0</subnetmask>
                 <gateway>192.168.1.1</gateway>
                 <nameserver>8.8.8.8</nameserver>
@@ -36,8 +38,9 @@
     
     <distro>fedora</distro>
     <repos>
-        <repo name="fedora" path="ftp://192.168.1.3/fedora"></repo>
-        <repo name="updates" path="ftp://192.168.1.3/updates"></repo>
+        <repo name="c7buildroot" path="ftp://192.168.1.3/c7buildroot/"></repo>
+        <repo name="c7pass1" path="ftp://192.168.1.3/c7pass1/"></repo>
+        <repo name="comps" path="ftp://192.168.1.3/comps/"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
     <extlinuxconf>false</extlinuxconf>

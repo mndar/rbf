@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
 class RbfUtils():
-    #PARTITION_BEGIN = "2048"
-    PARTITION_BEGIN = "1M"
+    PARTITION_BEGIN = "2048"
+    LOGICAL_PARTITION_START_INDEX = 5
+    #PARTITION_BEGIN = "1M"
     SECTOR_SIZE = "512"
     def __init__(self):
         """RootFS Build Factory Utils"""

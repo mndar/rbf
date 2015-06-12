@@ -57,7 +57,9 @@ Known Issues:
 2.  This happens with the Cubietruck at times. It has happened to me twice after plugging in the HDMI cable.
     It boots from NAND flash instead of the microsd card. Just rebooting by pressing the button on the side fixes the problem for me.
     
-    
+3.  NetworkManager doesn't start on the Raspberry Pi 2 with the kernel we are using. Have to run dhclient manually of set ip address manually
+
+
 Usage of scripts in commonscripts:
 
 1.  expandimage.sh $FILE $EXPANDBY

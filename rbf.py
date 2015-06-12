@@ -84,8 +84,8 @@ class BoardTemplateParser():
     Parses XML Template and performs required actions on image file
     """
     INDEX, SIZE, BEGIN, PTYPE, FS, MOUNTPOINT, UUID = range (0,7)
-    INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR = range(100,120)    
-    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR = range (200,220)
+    INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR, NO_ROOT_FOUND = range(100,121)    
+    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR = range (200,223)
     RbfScriptErrors = { LOOP_DEVICE_EXISTS: "LOOP_DEVICE_EXISTS: Specified Loop Device Already Exists. Check losetup -l",
                         FALLOCATE_ERROR : "FALLOCATE_ERROR: Error While Creating Image File",
                         PARTED_ERROR: "PARTED_ERROR: Could Not Partition Image",
@@ -104,8 +104,11 @@ class BoardTemplateParser():
                         BOARD_SCRIPT_ERROR: "BOARD_SCRIPT_ERROR: Error In Board Script",
                         FINALIZE_SCRIPT_ERROR: "FINALIZE_SCRIPT_ERROR: Error In Finalize Script",
                         EXTLINUXCONF_ERROR: "EXTLINUXCONF_ERROR: Error Creating /boot/extlinux/extlinux.conf",
-                        NO_ETC_OVERLAY: "No Etc Overlay Found",
-                        LOOP_DEVICE_DELETE_ERROR: "Could Not Delete Loop Device. Device Might Be Busy. Check \"losetup -l\""  }
+                        NO_ETC_OVERLAY: "NO_ETC_OVERLAY: No Etc Overlay Found",
+                        LOOP_DEVICE_DELETE_ERROR: "LOOP_DEVICE_CREATE_ERROR: Could Not Delete Loop Device. Device Might Be Busy. Check \"losetup -l\"",
+                        LOSETUP_ERROR: "LOSETUP_ERROR: Something went wrong while setting up the loopback device",
+                        PARTPROBE_ERROR: "PARTPROBE_ERROR: Probing Parititons Failed",
+                        COULD_NOT_CREATE_WORKDIR: "COULD_NOT_CREATE_WORKDIR: Could not create work directory"  }
    
     def __init__(self, action, xmlTemplate):
         """Constructor for BoardTemplateParser"""
@@ -198,9 +201,14 @@ class BoardTemplateParser():
     def verifyPartitionSizes(self,partitionsDom):
         """Checks if partition size is exceeding total image size"""
         partitionSizeSum = 0
+        foundRoot = False
         for partitions in partitionsDom:
             partition = partitions.getElementsByTagName("partition")
             for p in partition:
+                if p.getAttribute("type") == "extended":
+                    continue
+                if p.getAttribute("mountpoint") == "/":
+                    foundRoot = True           
                 sizeString = p.getAttribute("size")
                 sizeNumber = sizeString[0:-1]
                 if not (self.rbfUtils.isSizeInt(sizeNumber)):
@@ -210,11 +218,12 @@ class BoardTemplateParser():
                 sizeSuffix=size[-1:]
                 if not (sizeSuffix=="M" or sizeSuffix=="G"):
                     logging.error("Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
-                    sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)
-                if p.getAttribute("type") == "extended":
-                    continue    
+                    sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
                 partitionSizeSum = partitionSizeSum + int(size[0:-1])
         logging.info("Image Size: " + self.imageSize + " Parititon Size Sum: " + str(partitionSizeSum)+"M")
+        if not foundRoot:
+            logging.error("No Root Found. Check Parititon Data")
+            sys.exit(BoardTemplateParser.NO_ROOT_FOUND)
         if int(self.imageSize[0:-1]) >= partitionSizeSum:
             return True
         else:
@@ -232,10 +241,13 @@ class BoardTemplateParser():
             logging.error("Parititon Sizes Exceed Image Size")
             sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)
             
-        partedString = "parted " + self.imagePath + " -s mklabel msdos "
+        partedString = "parted " + self.imagePath + "  --align optimal -s mklabel msdos "
         extendedStart = False
+        extendedEndSector = "0"
         totalPartitionCount = 0
+        logicalPartitionCount = 0      
         begin = self.rbfUtils.PARTITION_BEGIN
+        imageEnd = self.rbfUtils.calcParitionEndSector("0",self.imageSize)
         for partitions in partitionsDom:
             partition = partitions.getElementsByTagName("partition")
             primaryCount = 0
@@ -258,39 +270,68 @@ class BoardTemplateParser():
                         primaryCount = primaryCount + 1
                     if ptype == "primary" or ptype == "extended":
                         totalPartitionCount = totalPartitionCount + 1
-                    
-                    """Adjust partition indexes. parted seems to skip a partition number if a logical partition is create before 3 primary ones"""
-                    if primaryCount < 3 and extendedStart == True:
-                        index = str(int(index) + 1)
                         
+                    """Adjust partition indexes. parted seems to create logical partitions from index 5 irrespective of number of primary partitions created"""
+                    if ptype == "logical":
+                        index = str (self.rbfUtils.LOGICAL_PARTITION_START_INDEX + logicalPartitionCount)
+                        logicalPartitionCount = logicalPartitionCount + 1
+                    
+                    if mountpoint == "/":
+                        self.rootDeviceIndex = index
+                    
+                    #ignore filesystem and mountpoint for extended partition
+                    if ptype == "extended":
+                        fs=""
+                        mountpoint=""
+                            
                     logging.info("Creating Partition " + index + " " + size + " " + ptype + " " + fs + " " + mountpoint + " " + partuuid)
+                        
                     x = [index, size, begin, ptype, fs, mountpoint, partuuid]
                     self.imageData.append(x)
                     
-                    end = self.rbfUtils.calcParitionEndSize(begin,size)
+                    #use all available space for extended partition. we are not allowing creation of primary partitions after an extended partition is created.
+                    if ptype == "extended":
+                        end = imageEnd
+                    else:
+                        end = self.rbfUtils.calcParitionEndSector(begin,size)
                     
+                    #Adjust last partition size. do not let end sector count created go beyond the size of image                    
+                    if ptype == "primary" and  int(end) > int(imageEnd):
+                        end = imageEnd
+                    elif extendedStart == True and ptype == "logical" and int(end) > int(extendedEndSector):
+                        end = extendedEndSector
+                    
+                           
                     if fs == "swap":
                         fs = "linux-swap"
                     elif fs == "vfat":
                         fs = "fat32"
-                    partedString = partedString + "mkpart " + ptype + " " + fs + " " + begin[0:-1] + " " + end[0:-1] + " "
+                    partedString = partedString + "mkpart " + ptype + " " + fs + " " + begin + "s " + end + "s "
                     
                     if ptype == "logical" and extendedStart == False:
                         logging.error("Cannot Create Logical Parititon before Extended")
                         sys.exit(BoardTemplateParser.LOGICAL_PART_ERROR)
                     if ptype == "primary" and extendedStart == True:
                         logging.error("Cannot Create Primary Parititon after Extended")
-                        sys.exit(BoardTemplateParser.PRIMARY_PART_ERROR)
+                        sys.exit(BoardTemplateParser.PRIMARY_PART_ERROR)                        
                     elif ptype == "extended":
                         extendedStart = True
+                        #need to start first logical partition after 2048 sectors
+                        begin = str(int(begin) + int(self.rbfUtils.PARTITION_BEGIN))
+                        extendedEndSector = end
+                    elif ptype == "logical":
+                        #need to start new logical partitions after 2049 sectors
+                        begin = str(int(end) + int(self.rbfUtils.PARTITION_BEGIN) + 1) 
                     else:
-                        begin = end
+                        #in case of primary partitions we just start at the next sector
+                        begin = str(int(end) + 1)
                 else:
                     logging.error("Invalid Partition Data")
                     sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA)
+                    
             self.rbfScript.write("echo [INFO ]   $0 Creating Parititons\n")
             self.rbfScript.write(partedString + " &>> rbf.log \n")
-            self.rbfScript.write(self.getShellExitString(BoardTemplateParser.PARTED_ERROR))
+            self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.PARTED_ERROR))
 
     def delDeviceIfExists(self, device):
         """Generates command to detach loop device if it exists"""
@@ -298,8 +339,10 @@ class BoardTemplateParser():
 
     def createFilesystems(self):
         """Creates Filesystem"""
-        self.rbfScript.write("losetup " + self.loopDevice + " " + self.imagePath + "\n")
-        self.rbfScript.write("partprobe " + self.loopDevice + "\nsleep 2\n")
+        self.rbfScript.write("losetup " + self.loopDevice + " " + self.imagePath + " &>> rbf.log\n")
+        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.LOSETUP_ERROR))
+        self.rbfScript.write("partprobe " + self.loopDevice + " &>> rbf.log\n")
+        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.PARTPROBE_ERROR))
         for i in range(0, len(self.imageData)):
             if self.imageData[i][BoardTemplateParser.PTYPE] == "extended":
                 continue
@@ -333,6 +376,7 @@ class BoardTemplateParser():
         """Mounting Partitions"""
         logging.info("Mounting Partitions")
         self.rbfScript.write("mkdir -p " + self.workDir + "\n")
+        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COULD_NOT_CREATE_WORKDIR))
         for i in range(0, len(self.imageData)):
                 index = self.imageData[i][BoardTemplateParser.INDEX]
                 mountpoint = self.imageData[i][BoardTemplateParser.MOUNTPOINT]
@@ -528,9 +572,10 @@ class BoardTemplateParser():
         self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.SELINUX_ERROR))
         
         if os.path.isfile("boards.d/"+self.boardName+".sh"):
-            logging.info("Board Script: " + "boards.d/"+self.boardName+".sh")
-            self.rbfScript.write("echo [INFO ]  $0 Running Board Script: " + "boards.d/"+self.boardName+".sh\n")
-            self.rbfScript.write("./boards.d/" + self.boardName + ".sh " + self.imagePath + " " + self.ubootPath  + " " + self.workDir + " " + self.rootFiles + "\n")
+            logging.info("Board Script: " + "boards.d/"+self.boardName+".sh")            
+            boardScriptCommand = "./boards.d/" + self.boardName + ".sh " + self.imagePath + " " + self.ubootPath  + " " + self.workDir + " " + self.rootFiles + " " + self.rootDeviceIndex + "\n"
+            self.rbfScript.write("echo [INFO ]  $0 Running Board Script: " + boardScriptCommand)
+            self.rbfScript.write(boardScriptCommand)
             self.rbfScript.write(self.getShellExitString(BoardTemplateParser.BOARD_SCRIPT_ERROR))
         
         logging.info("Finalize Script: " + self.finalizeScript)
@@ -557,9 +602,9 @@ class BoardTemplateParser():
             bootPath = path[path.rfind("/"):]
         return bootPath
             
-    def extLinuxConf(self):
+    def configureExtLinux(self):
         """Creating extlinux.conf"""
-        if self.extLinuxConf == "false":
+        if self.extlinuxConf == "false":
             self.initramfsScript.close()
             return
 
@@ -586,7 +631,7 @@ class BoardTemplateParser():
                 extlinuxContents = extlinuxContents + "label " + self.linuxDistro + "\n\t" + "kernel /vmlinuz-" + kernelVer + "\n\tappend enforcing=0 root=" + self.getPartition("/") + "\n\tfdtdir /dtb-" + kernelVer + "\n\tinitrd /initramfs-" + kernelVer + ".img\n\n"
             self.initramfsScript.write ("cat > " + self.workDir +"/boot/extlinux/extlinux.conf << EOF\n" + extlinuxContents + "EOF\n")
             self.initramfsScript.write(self.getShellExitString(BoardTemplateParser.EXTLINUXCONF_ERROR))
-            
+        
         self.initramfsScript.close()
             
     def makeBootable(self):
@@ -623,8 +668,8 @@ class BoardTemplateParser():
         networkConfigPath = self.etcOverlay+"/sysconfig/network-scripts"
         try:
             os.makedirs(networkConfigPath)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(networkConfigPath):
+        except OSError as osError:
+            if osError.errno == errno.EEXIST and os.path.isdir(networkConfigPath):
                 pass
             else:
                 raise
@@ -643,17 +688,12 @@ class BoardTemplateParser():
                     logging.info("IP Addres: " + ipaddress)
                 
                     ifcfg = open (networkConfigPath+"/ifcfg-"+name,"w")
-                    ifcfg.write("DEVICE=" + name + "\nBOOTPROTO=static\nNM_CONTROLLED=no\nONBOOT=yes\nIPADDR=" + ipaddress +"\nNETMASK=" + subnetmask + "\nGATEWAY=" + gateway+"\n")
+                    ifcfg.write("TYPE=\"Ethernet\"\nBOOTPROTO=\"none\"\nNM_CONTROLLED=\"yes\"\nDEFROUTE=\"yes\"\nNAME=\""+name+"\"\nUUID=\""+str(uuid.uuid4())+"\"\nONBOOT=\"yes\"\nIPADDR0=\""+ipaddress+"\"\nNETMASK0=\""+subnetmask+"\"\nGATEWAY0=\""+gateway+"\"\nDNS1=\""+nameserver+"\"\n")                  
                     ifcfg.close()
                     ifcfg = open (self.etcOverlay + "/resolv.conf", "a")
                     ifcfg.write("nameserver " + nameserver+"\n")
                     ifcfg.close()
-                else:
-                    logging.info("IP Address: DHCP")
-                    ifcfg = open (networkConfigPath+"/ifcfg-"+name,"w")
-                    ifcfg.write("DEVICE=" + name + "\nBOOTPROTO=dhcp\nNM_CONTROLLED=no\nONBOOT=yes\n")
-                    ifcfg.close()
-        
+                
     def cleanUp(self):
         """CleanUp Steps"""
         logging.info("Clean Up")
@@ -721,7 +761,7 @@ if ( __name__ == "__main__"):
     boardParser.installKernel()
     boardParser.installPackages()
     boardParser.makeBootable()
-    #boardParser.configureNetwork()
+    boardParser.configureNetwork()
     boardParser.finalActions()    
     
     if action == "build":
@@ -730,18 +770,17 @@ if ( __name__ == "__main__"):
         if rbfRet == 0:
             logging.info("Successfully Executed rbf.sh")
         else:
-            logging.info("rbf Exit Code: " + str(rbfRet))
             logging.error (boardParser.RbfScriptErrors[rbfRet])
             boardParser.cleanUp()
             sys.exit(rbfRet)
             
         boardParser.createInitramfs()    
-        boardParser.extLinuxConf()
+        boardParser.configureExtLinux()
         initramfsRet = subprocess.call(["/usr/bin/bash", "initramfs.sh"])
         if initramfsRet != 0:                    
             logging.error(boardParser.RbfScriptErrors[initramfsRet])
             boardParser.cleanUp()
-            sys.exit(rbfRet)
+            sys.exit(initramfsRet)
         
     boardParser.cleanUp()
     sys.exit(0)

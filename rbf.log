@@ -1,30 +1,11 @@
+[ERROR]  This script is not meant to be run on x86_64
 [INFO ]  All Commands Found. Continuing
 [INFO ]  Arguments Correct. Continuing
-[INFO ]  Xml Template: templates/qemu_local.xml
-[INFO ]  Parsing: templates/qemu_local.xml
-[INFO ]  Successfully Parsed Board Template For: cubietruck
+[INFO ]  Xml Template: templates/rpi2.xml.bak
+[INFO ]  Parsing: templates/rpi2.xml.bak
+[INFO ]  Successfully Parsed Board Template For: rpi2
 [INFO ]  Creating Image File
-[INFO ]  Creating Image: 4G raw qemu-centos-image-local.img
+[INFO ]  Creating Image: 4G raw rpi2-image.img
 [INFO ]  Creating Partitions
-[INFO ]  Image Size: 4096M Parititon Size Sum: 3572M
-[INFO ]  Creating Partition 1 500M primary ext3 /boot 3c498e34-5064-41b8-a12f-957886e812d2
-[INFO ]  Creating Partition 2 1024M primary swap swap 4df15c39-4b2f-44dd-a571-16762e4b1391
-[INFO ]  Creating Partition 3 2048M primary ext4 / 5e113de4-08f6-4fda-9867-35913f632b10
-[INFO ]  Mounting Partitions
-[INFO ]  Mounting Parititon 3 on /tmp/temp/
-[INFO ]  Mounting Parititon 1 on /tmp/temp/boot
-[INFO ]  Found Repo: c7buildroot ftp://192.168.1.3/c7buildroot/
-[INFO ]  Found Repo: c7pass1 ftp://192.168.1.3/c7pass1/
-[INFO ]  Found Repo: comps ftp://192.168.1.3/comps/
-[INFO ]  Installing Kernel
-[INFO ]  Kernel Type: stock
-[INFO ]  Using Stock Kernel
-[INFO ]  Installing Package Groups: @core
-[INFO ]  Installing Packages: net-tools kernel
-[INFO ]  Copying Etc Overlay: ./etc
-[INFO ]  Setting empty root pass
-[INFO ]  Setting SELinux status to disabled
-[INFO ]  Board Script: boards.d/cubietruck.sh
-[INFO ]  Finalize Script: ./boards.d/finalize.sh
-[INFO ]  Clean Up
-[INFO ]  If you need any help, please provide rbf.log rbf.sh initramfs.sh cleanup.sh templates/qemu_local.xml and the above output.
+[INFO ]  Image Size: 4096M Parititon Size Sum: 3996M
+[ERROR]  No Root Found. Check Parititon Data
