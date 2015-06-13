@@ -14,7 +14,7 @@
         <package>bash,systemd</package>
     </packages>
 
-    <uboot>files/u-boot-sunxi-with-spl.bin</uboot>
+    <uboot>files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
     <rootfiles>none</rootfiles>
     <firmware>none</firmware>
     
@@ -23,7 +23,6 @@
         <initrd>files/initramfs-4.0.0-0.rc5.git4.1.fc22.armv7hl.img</initrd>
         <modules>files/4.0.0-0.rc5.git4.1.fc22.armv7hl</modules>
         <dtbdir>files/dtb-4.0.0-0.rc5.git4.1.fc22.armv7hl</dtbdir>
-        <dtb>sun7i-a20-cubietruck.dtb</dtb>        
     </kernel>    
 
     <config>

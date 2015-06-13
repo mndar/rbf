@@ -1,0 +1,52 @@
+<template>    
+    <board>cubietruck</board>
+    <image size="4G" type="raw" path="disk1.img"></image>
+    <partitions>
+        <partition index="1" size="200M" type="primary" fs="ext3" mountpoint="/boot"></partition>
+        <partition index="2" size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition index="3" size="2G" type="primary" fs="ext4" mountpoint="/"></partition>        
+    </partitions>
+    
+    <packages>
+        <group>@core</group>
+        <package>net-tools</package>
+    </packages>
+
+    <uboot>files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
+    <rootfiles>none</rootfiles>
+    <firmware>none</firmware>
+    
+    <kernel type="custom">
+        <image>files/vmlinuz-4.0.0-0.rc5.git4.1.fc22.armv7hl</image>
+        <initrd>files/initramfs-4.0.0-0.rc5.git4.1.fc22.armv7hl.img</initrd>
+        <modules>files/4.0.0-0.rc5.git4.1.fc22.armv7hl</modules>
+        <dtbdir>files/dtb-4.0.0-0.rc5.git4.1.fc22.armv7hl</dtbdir>                
+    </kernel>    
+
+    <config>
+        <hostname>cubietruck</hostname>
+        <selinux>disabled</selinux>
+        <network>
+            <interface name="eth0" config="static">
+                <ipaddress>192.168.1.125</ipaddress>
+                <subnetmask>255.255.255.0</subnetmask>
+                <gateway>192.168.1.1</gateway>
+                <nameserver>8.8.8.8</nameserver>
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>centos</distro>
+    <repos>
+        <repo name="c7buildroot" path="ftp://192.168.1.3/c7buildroot"></repo>
+        <repo name="c7pass1" path="ftp://192.168.1.3/c7pass1"></repo>
+        <repo name="comps" path="ftp://192.168.1.3/comps"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>true</extlinuxconf>
+    
+ </template>
+ 

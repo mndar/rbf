@@ -1,0 +1,12 @@
+#uncomment to overclock the arm. 700 MHz is the default.
+arm_freq=700# NOOBS Auto-generated Settings:
+hdmi_force_hotplug=1
+config_hdmi_boost=4
+overscan_left=24
+overscan_right=24
+overscan_top=16
+overscan_bottom=16
+disable_overscan=0
+core_freq=250
+sdram_freq=400
+over_voltage=0

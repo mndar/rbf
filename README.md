@@ -57,7 +57,7 @@ Known Issues:
 2.  This happens with the Cubietruck at times. It has happened to me twice after plugging in the HDMI cable.
     It boots from NAND flash instead of the microsd card. Just rebooting by pressing the button on the side fixes the problem for me.
     
-3.  NetworkManager doesn't start on the Raspberry Pi 2 with the kernel we are using. Have to run dhclient manually of set ip address manually
+3.  DBus, NetworkManager don't start on the Raspberry Pi 2. Have to run dhclient manually.
 
 
 Usage of scripts in commonscripts:
@@ -89,4 +89,7 @@ Thus making your new kernel bootable.
     cp yumplugins/extlinuxconf.conf /etc/yum/pluginconf.d/
     
 
-Note: The files in the directory files/* have been taken from Fedora 21
+Note:
+1.  The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
+2.  files/cubietruck/u-boot-sunxi-with-spl.bin has been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
+

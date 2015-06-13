@@ -507,19 +507,30 @@ class BoardTemplateParser():
                 self.kernelPath = k.getElementsByTagName('image')[0].childNodes[0].data
                 self.initrdPath = k.getElementsByTagName('initrd')[0].childNodes[0].data
                 self.dtbDir = k.getElementsByTagName('dtbdir')[0].childNodes[0].data
-                self.dtbFile = k.getElementsByTagName('dtb')[0].childNodes[0].data
                 modulesPath = k.getElementsByTagName('modules')[0].childNodes[0].data
                 logging.info("Using Custom Kernel: " + self.kernelPath)
                 logging.info("Using Initrd: " + self.initrdPath)
                 logging.info("Using Modules: " + modulesPath)
                 logging.info("Using DTP Dir: " + self.dtbDir)
-                logging.info("Using DTB: " + self.dtbFile)
-                self.rbfScript.write("cp -rv " + self.kernelPath + " " + self.initrdPath + " " + self.dtbDir + " " + self.workDir + "/boot &>> rbf.log \n")
+                
+                self.rbfScript.write("echo [INFO ]  $0 Copying Custom Kernel\n")
+                self.rbfScript.write("cp -rv " + self.kernelPath + " " + self.workDir + "/boot &>> rbf.log \n")
                 self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_KERNEL_ERROR))
-                self.rbfScript.write("mkdir -p " + self.workDir + "/lib/modules &>> rbf.log \n")
-                self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_KERNEL_ERROR))
-                self.rbfScript.write("cp -rv " + modulesPath + " " + self.workDir + "/lib/modules/" + " &>> rbf.log \n")
-                self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_KERNEL_ERROR))
+
+                if self.initrdPath != "none":
+                    self.rbfScript.write("cp -rv " + self.initrdPath + " " + self.workDir + "/boot &>> rbf.log \n")
+                    self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_KERNEL_ERROR))
+                if self.dtbDir != "none":
+                    self.rbfScript.write("cp -rv " + self.dtbDir + " " + self.workDir + "/boot &>> rbf.log \n")
+                    self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_KERNEL_ERROR))
+                 
+                self.rbfScript.write("echo [INFO ]  $0 Copying Custom Kernel Modules\n")    
+                if modulesPath != "none":
+                    self.rbfScript.write("mkdir -p " + self.workDir + "/lib/modules &>> rbf.log \n")
+                    self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_KERNEL_ERROR))
+                    self.rbfScript.write("cp -rv " + modulesPath + " " + self.workDir + "/lib/modules/" + " &>> rbf.log \n")
+                    self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_KERNEL_ERROR))
+                    
         elif self.kernelType == "stock":
             for k in kernelDom:                
                 logging.info("Using Stock Kernel")
@@ -571,17 +582,19 @@ class BoardTemplateParser():
         self.rbfScript.write("sed -i 's/SELINUX=enforcing/SELINUX=" + self.selinuxConf + "/' " + self.workDir + "/etc/selinux/config  &>> rbf.log \n")
         self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.SELINUX_ERROR))
         
-        if os.path.isfile("boards.d/"+self.boardName+".sh"):
-            logging.info("Board Script: " + "boards.d/"+self.boardName+".sh")            
+        if os.path.isfile("boards.d/"+self.boardName+".sh") and os.access("boards.d/"+self.boardName+".sh",os.X_OK):
             boardScriptCommand = "./boards.d/" + self.boardName + ".sh " + self.imagePath + " " + self.ubootPath  + " " + self.workDir + " " + self.rootFiles + " " + self.rootDeviceIndex + "\n"
+            logging.info("Board Script: " + boardScriptCommand)            
             self.rbfScript.write("echo [INFO ]  $0 Running Board Script: " + boardScriptCommand)
             self.rbfScript.write(boardScriptCommand)
-            self.rbfScript.write(self.getShellExitString(BoardTemplateParser.BOARD_SCRIPT_ERROR))
+            self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.BOARD_SCRIPT_ERROR))
+        else:
+            logging.info("Board Script Not Found or Not Executable")
         
         logging.info("Finalize Script: " + self.finalizeScript)
         self.rbfScript.write("echo [INFO ]  $0 Running Finalize Script: " + self.finalizeScript +"\n")
         self.rbfScript.write(self.finalizeScript+"\n")
-        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.FINALIZE_SCRIPT_ERROR))
+        self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.FINALIZE_SCRIPT_ERROR))
         self.rbfScript.write("exit 0\n")
         self.rbfScript.close()
     

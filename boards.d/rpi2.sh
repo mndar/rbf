@@ -7,6 +7,6 @@ ROOTPARTINDEX=$5
 
 #Enter Custom Commands Below
 echo "Extracting Boot Files"
-tar xvf $ROOTFILES -C $ROOTPATH
+tar Jxvf $ROOTFILES -C $ROOTPATH
 sed -i 's/mmcblk0p3/mmcblk0p'$ROOTPARTINDEX'/' $ROOTPATH/boot/cmdline.txt
 exit 0
