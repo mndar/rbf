@@ -12,6 +12,7 @@
         <package>net-tools</package>
     </packages>
 
+    <stage1loader>none</stage1loader>
     <uboot>files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
     <rootfiles>none</rootfiles>
     <firmware>none</firmware>

@@ -1,37 +1,36 @@
 [INFO ]  All Commands Found. Continuing
 [INFO ]  Arguments Correct. Continuing
-[INFO ]  Xml Template: templates/rpi2_centos_custom.xml
-[INFO ]  Parsing: templates/rpi2_centos_custom.xml
-[INFO ]  Successfully Parsed Board Template For: rpi2
+[INFO ]  Xml Template: templates/odroidc1_local_static_ip.xml
+[INFO ]  Parsing: templates/odroidc1_local_static_ip.xml
+[INFO ]  Successfully Parsed Board Template For: odroidc1
 [INFO ]  Creating Image File
-[INFO ]  Creating Image: 4G raw rpi2-centos-custom.img
+[INFO ]  Creating Image: 3G raw odroidc1-image-local.img
 [INFO ]  Creating Partitions
-[INFO ]  Image Size: 4096M Parititon Size Sum: 3272M
-[INFO ]  Creating Partition 1 200M primary vfat /boot A6D2E592
-[INFO ]  Creating Partition 2 1024M primary swap swap 75c411f4-ccc6-4cfa-ac8e-ac1d0b902f6d
-[INFO ]  Creating Partition 3 2048M primary ext4 / ed7137a2-01ce-49c8-9573-40e0440d16c9
+[INFO ]  Image Size: 3072M Parititon Size Sum: 2548M
+[INFO ]  Creating Partition 1 500M primary vfat /boot 59B4781A
+[INFO ]  Creating Partition 2 2048M primary ext4 / 3c53006d-449e-4d59-bdf2-6c13964b9db5
 [INFO ]  Mounting Partitions
-[INFO ]  Mounting Parititon 3 on /tmp/temp/
+[INFO ]  Mounting Parititon 2 on /tmp/temp/
 [INFO ]  Mounting Parititon 1 on /tmp/temp/boot
-[INFO ]  Found Repo: c7buildroot ftp://192.168.1.3/c7buildroot
-[INFO ]  Found Repo: c7pass1 ftp://192.168.1.3/c7pass1
-[INFO ]  Found Repo: comps ftp://192.168.1.3/comps
+[INFO ]  Found Repo: c7buildroot ftp://192.168.1.3/c7buildroot/
+[INFO ]  Found Repo: c7pass1 ftp://192.168.1.3/c7pass1/
+[INFO ]  Found Repo: comps ftp://192.168.1.3/comps/
 [INFO ]  Installing Kernel
 [INFO ]  Kernel Type: custom
-[INFO ]  Using Custom Kernel: files/rpi2/kernel7.img
-[INFO ]  Using Initrd: none
-[INFO ]  Using Modules: files/rpi2/3.18.14+
-[INFO ]  Using DTP Dir: none
+[INFO ]  Using Custom Kernel: files/odroidc1/uImage
+[INFO ]  Using Initrd: files/odroidc1/uInitrd
+[INFO ]  Using Modules: files/odroidc1/3.10.66-49
+[INFO ]  Using DTP Dir: files/odroidc1/meson8b_odroidc.dtb
 [INFO ]  Installing Package Groups: @core
 [INFO ]  Installing Packages: 
 [INFO ]  Reading Network Config
 [INFO ]  Found Network Interface: eth0 static
-[INFO ]  IP Addres: 192.168.1.125
+[INFO ]  IP Addres: 192.168.1.155
 [INFO ]  Copying Etc Overlay: ./etc
 [INFO ]  Setting empty root pass
 [INFO ]  Setting SELinux status to disabled
-[INFO ]  Board Script: ./boards.d/rpi2.sh rpi2-centos-custom.img none /tmp/temp files/rpi2/boot_rpi2.tar.xz 3
+[INFO ]  Board Script: ./boards.d/odroidc1.sh odroidc1-image-local.img files/odroid/bl1.bin.hardkernel files/odroidc1/u-boot.bin /tmp/temp files/odroidc1/boot.ini 2 3c53006d-449e-4d59-bdf2-6c13964b9db5
 
 [INFO ]  Finalize Script: ./boards.d/finalize.sh
 [INFO ]  Clean Up
-[INFO ]  If you need any help, please provide rbf.log rbf.sh initramfs.sh cleanup.sh templates/rpi2_centos_custom.xml and the above output.
+[INFO ]  If you need any help, please provide rbf.log rbf.sh initramfs.sh cleanup.sh templates/odroidc1_local_static_ip.xml and the above output.

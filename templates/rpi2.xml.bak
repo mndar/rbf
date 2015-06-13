@@ -14,6 +14,7 @@
         <package></package>
     </packages>
 
+    <stage1loader>none</stage1loader>
     <uboot>none</uboot>
     <rootfiles>files/rpi2/boot_rpi2.tar.xz</rootfiles>
     <firmware>none</firmware>

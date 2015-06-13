@@ -1,0 +1,4 @@
+# Device nodes to trigger on-demand module loading.
+autofs4 autofs c10:235
+btrfs btrfs-control c10:234
+uinput uinput c10:223

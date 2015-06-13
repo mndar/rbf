@@ -157,6 +157,7 @@ class BoardTemplateParser():
         self.extlinuxConf = self.getTagValue(self.boardDom,"extlinuxconf")
         self.hostName = self.getTagValue(self.boardDom,"hostname")
         self.rootFiles = self.getTagValue(self.boardDom,"rootfiles")
+        self.stage1Loader = self.getTagValue(self.boardDom,"stage1loader")
         self.ubootPath = self.getTagValue(self.boardDom,"uboot")
         self.firmwareDir = self.getTagValue(self.boardDom,"firmware")
         logging.info("Successfully Parsed Board Template For: " + self.boardName)
@@ -278,7 +279,7 @@ class BoardTemplateParser():
                     
                     if mountpoint == "/":
                         self.rootDeviceIndex = index
-                    
+                        self.rootDeviceUUID = partuuid
                     #ignore filesystem and mountpoint for extended partition
                     if ptype == "extended":
                         fs=""
@@ -583,7 +584,7 @@ class BoardTemplateParser():
         self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.SELINUX_ERROR))
         
         if os.path.isfile("boards.d/"+self.boardName+".sh") and os.access("boards.d/"+self.boardName+".sh",os.X_OK):
-            boardScriptCommand = "./boards.d/" + self.boardName + ".sh " + self.imagePath + " " + self.ubootPath  + " " + self.workDir + " " + self.rootFiles + " " + self.rootDeviceIndex + "\n"
+            boardScriptCommand = "./boards.d/" + self.boardName + ".sh " + self.loopDevice + " " + self.stage1Loader +" " + self.ubootPath  + " " + self.workDir + " " + self.rootFiles + " " + self.rootDeviceIndex + " " + self.rootDeviceUUID + "\n"
             logging.info("Board Script: " + boardScriptCommand)            
             self.rbfScript.write("echo [INFO ]  $0 Running Board Script: " + boardScriptCommand)
             self.rbfScript.write(boardScriptCommand)

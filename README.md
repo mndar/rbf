@@ -57,7 +57,7 @@ Known Issues:
 2.  This happens with the Cubietruck at times. It has happened to me twice after plugging in the HDMI cable.
     It boots from NAND flash instead of the microsd card. Just rebooting by pressing the button on the side fixes the problem for me.
     
-3.  DBus, NetworkManager don't start on the Raspberry Pi 2. Have to run dhclient manually.
+3.  DBus, NetworkManager don't start on the Raspberry Pi 2 and ODroid C1. Have to run dhclient manually.
 
 
 Usage of scripts in commonscripts:
@@ -92,4 +92,4 @@ Thus making your new kernel bootable.
 Note:
 1.  The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
 2.  files/cubietruck/u-boot-sunxi-with-spl.bin has been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
-
+3.  The kernel files/odroidc1 have been taken from Ubuntu 14.04. The u-boot files have been compiled from sources at https://github.com/hardkernel/u-boot.git

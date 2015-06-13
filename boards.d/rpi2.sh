@@ -1,9 +1,11 @@
 #!/usr/bin/bash
 DISKIMAGE=$1
-UBOOT=$2
-ROOTPATH=$3
-ROOTFILES=$4
-ROOTPARTINDEX=$5
+STAGE1LOADER=$2
+UBOOT=$3
+ROOTPATH=$4
+ROOTFILES=$5
+ROOTPARTINDEX=$6
+ROOTUUID=$7
 
 #Enter Custom Commands Below
 echo "Extracting Boot Files"
