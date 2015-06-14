@@ -3,11 +3,10 @@
     <image size="4G" type="raw" path="rpi2-image.img"></image>
     <partitions>
         <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>        
-        <partition size="2000M" type="extended" fs="" mountpoint=""></partition>
-        <partition size="1000M" type="logical" fs="ext4" mountpoint="/"></partition>         
+        <partition size="1496M" type="extended" fs="" mountpoint=""></partition>
+        <partition size="2000M" type="logical" fs="ext4" mountpoint="/"></partition>         
         <partition size="1000M" type="logical" fs="ext4" mountpoint="/mnt"></partition>
-        <partition size="1000M" type="primary" fs="ext4" mountpoint="/home"></partition>
-        <partition size="596M" type="primary" fs="ext4" mountpoint="/var"></partition>
+        <partition size="496M" type="logical" fs="ext4" mountpoint="/opt"></partition>
     </partitions>
     
     <packages>

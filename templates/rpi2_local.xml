@@ -2,14 +2,14 @@
     <board>rpi2</board>
     <image size="4G" type="raw" path="rpi2-centos-image.img"></image>
     <partitions>
-        <partition index="1" size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
-        <partition index="2" size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
-        <partition index="3" size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
     </partitions>
     
     <packages>
         <group>@core</group>
-        <package>net-tools,nano,file</package>
+        <package>net-tools</package>
     </packages>
 
     <stage1loader>none</stage1loader>

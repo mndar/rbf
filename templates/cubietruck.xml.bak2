@@ -2,11 +2,11 @@
     <board>cubietruck</board>
     <image size="4G" type="raw" path="disk1.img"></image>
     <partitions>
-        <partition index="1" size="512M" type="primary" fs="ext3" mountpoint="/boot"></partition>
-        <partition index="2" size="2048M" type="primary" fs="ext4" mountpoint="/"></partition>
-        <partition index="3" size="1536M" type="extended" fs="" mountpoint=""></partition>
-        <partition index="4" size="1000M" type="logical" fs="ext4" mountpoint="/home"></partition>
-        <partition index="5" size="536M" type="logical" fs="ext4" mountpoint="/var"></partition>
+        <partition size="512M" type="primary" fs="ext3" mountpoint="/boot"></partition>
+        <partition size="2048M" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition size="1536M" type="extended" fs="" mountpoint=""></partition>
+        <partition size="1000M" type="logical" fs="ext4" mountpoint="/home"></partition>
+        <partition size="536M" type="logical" fs="ext4" mountpoint="/var"></partition>
     </partitions>
     
     <packages>

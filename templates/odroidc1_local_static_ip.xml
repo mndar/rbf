@@ -2,8 +2,8 @@
     <board>odroidc1</board>
     <image size="3G" type="raw" path="odroidc1-image-local.img"></image>
     <partitions>
-        <partition index="1" size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
-        <partition index="2" size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
     </partitions>
     
     <packages>
