@@ -199,26 +199,27 @@ class BoardTemplateParser():
         self.rbfScript.write("fallocate -l " + self.imageSize + " " + self.imagePath + " &>> rbf.log \n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.FALLOCATE_ERROR))
     
-    def verifyPartitionSizes(self,partitionsDom):
-        """Checks if partition size is exceeding total image size"""
+    def verifyPrimaryPartitionSizes(self,partitionsDom):
+        """Checks if Primary & Extended partition size is exceeding total image size"""
+        logging.info("Verifying that Primary & Extended partition sizes doesn't exceed image size")
         partitionSizeSum = 0
         foundRoot = False
         for partitions in partitionsDom:
             partition = partitions.getElementsByTagName("partition")
             for p in partition:
-                if p.getAttribute("type") == "extended":
-                    continue
                 if p.getAttribute("mountpoint") == "/":
-                    foundRoot = True           
+                    foundRoot = True
+                if p.getAttribute("type") == "logical":
+                    continue
                 sizeString = p.getAttribute("size")
                 sizeNumber = sizeString[0:-1]
                 if not (self.rbfUtils.isSizeInt(sizeNumber)):
-                    logging.error("Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
+                    logging.error("Primary Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
                     sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
                 size = self.rbfUtils.getImageSizeInM(sizeString)
                 sizeSuffix=size[-1:]
                 if not (sizeSuffix=="M" or sizeSuffix=="G"):
-                    logging.error("Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
+                    logging.error("Primary Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
                     sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
                 partitionSizeSum = partitionSizeSum + int(size[0:-1])
         logging.info("Image Size: " + self.imageSize + " Parititon Size Sum: " + str(partitionSizeSum)+"M")
@@ -230,6 +231,43 @@ class BoardTemplateParser():
         else:
             return False
     
+    def verifyLogicalPartitionSizes(self,partitionsDom):
+        """Checks if Logical partition size is exceeding Extended partition size"""
+        logging.info("Verifying that Logical partition sizes don't exceed Extended partition image size")
+        partitionSizeSum = 0
+        foundRoot = False
+        extendedPartitionSize = "OM"
+        logicalPartitionSizeSum = 0
+        for partitions in partitionsDom:
+            partition = partitions.getElementsByTagName("partition")
+            extendedPartitionSize = "0M"
+            for p in partition:
+                ptype = p.getAttribute("type")
+                if ptype == "primary":
+                    continue
+                if ptype == "extended":
+                    extendedPartitionSize = self.rbfUtils.getImageSizeInM(p.getAttribute("size"))
+                    logging.info("Extended Parititon Size: " + extendedPartitionSize)
+                    continue
+                if ptype == "logical":
+                    sizeString = p.getAttribute("size")
+                    logging.info("Found Logical Paritition: " + sizeString)
+                    sizeNumber = sizeString[0:-1]
+                    if not (self.rbfUtils.isSizeInt(sizeNumber)):
+                        logging.error("Logical Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
+                        sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
+                    size = self.rbfUtils.getImageSizeInM(sizeString)
+                    
+                    sizeSuffix=size[-1:]
+                    if not (sizeSuffix=="M" or sizeSuffix=="G"):
+                        logging.error("Logical Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
+                        sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
+                    logicalPartitionSizeSum = logicalPartitionSizeSum + int(size[0:-1])
+            if int(extendedPartitionSize[0:-1]) >= logicalPartitionSizeSum:
+                return True
+            else:
+                return False
+                    
     def createPartitions(self):
         """Creates Partitions"""
         logging.info("Creating Partitions")
@@ -237,13 +275,23 @@ class BoardTemplateParser():
             partitionsDom = self.boardDom.getElementsByTagName("partitions")
         except:
             logging.error("No Partitions Found")
+            sys.exit(BoardTemplateParser.NO_PARTITIONS_FOUND)
        
-        if not self.verifyPartitionSizes(partitionsDom):
-            logging.error("Parititon Sizes Exceed Image Size")
+        if not self.verifyPrimaryPartitionSizes(partitionsDom):
+            logging.error("Primary Parititon Sizes Exceed Image Size")
             sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)
             
-        partedString = "parted " + self.imagePath + "  --align optimal -s mklabel msdos "
+        if not self.verifyLogicalPartitionSizes(partitionsDom):
+            logging.error("Logical Parititon Sizes Exceed Extended Parititon Size")
+            sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)
+            
+        self.rbfScript.write("losetup " + self.loopDevice + " " + self.imagePath + " &>> rbf.log\n")
+        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.LOSETUP_ERROR))
+        
+        partedString = "parted " + self.loopDevice + " --align optimal -s mklabel msdos "
         extendedStart = False
+        primaryAfterExtended = False
+        extendedStartSector = "0"
         extendedEndSector = "0"
         totalPartitionCount = 0
         logicalPartitionCount = 0      
@@ -251,11 +299,9 @@ class BoardTemplateParser():
         imageEnd = self.rbfUtils.calcParitionEndSector("0",self.imageSize)
         for partitions in partitionsDom:
             partition = partitions.getElementsByTagName("partition")
-            primaryCount = 0
             for p in partition:
                 partuuid = str(uuid.uuid4())
-                if p.hasAttribute("index") and p.hasAttribute("size") and p.hasAttribute("type") and p.hasAttribute("fs") and p.hasAttribute("mountpoint"):
-                    index = p.getAttribute("index")
+                if p.hasAttribute("size") and p.hasAttribute("type") and p.hasAttribute("fs") and p.hasAttribute("mountpoint"):
                     size = self.rbfUtils.getImageSizeInM(p.getAttribute("size"))
                     ptype = p.getAttribute("type")
                     fs = p.getAttribute("fs")
@@ -264,13 +310,17 @@ class BoardTemplateParser():
                     if fs == "vfat":
                         partuuid = partuuid.upper()[:8]
                     
+                    if extendedStart == True and ptype == "extended":
+                        logging.error("Cannot have more than 1 extended paritition")
+                        sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA) 
+                    
                     if (ptype =="primary" or ptype == "extended") and totalPartitionCount == 4:
                         logging.error("Cannot Have More Than 4 Primary Partitions")
                         sys.exit(BoardTemplateParser.TOTAL_PARTITIONS_ERROR)
-                    if ptype == "primary":
-                        primaryCount = primaryCount + 1
+
                     if ptype == "primary" or ptype == "extended":
                         totalPartitionCount = totalPartitionCount + 1
+                        index = str(totalPartitionCount)
                         
                     """Adjust partition indexes. parted seems to create logical partitions from index 5 irrespective of number of primary partitions created"""
                     if ptype == "logical":
@@ -290,18 +340,22 @@ class BoardTemplateParser():
                     x = [index, size, begin, ptype, fs, mountpoint, partuuid]
                     self.imageData.append(x)
                     
-                    #use all available space for extended partition. we are not allowing creation of primary partitions after an extended partition is created.
-                    if ptype == "extended":
-                        end = imageEnd
-                    else:
-                        end = self.rbfUtils.calcParitionEndSector(begin,size)
-                    
+                    end = self.rbfUtils.calcParitionEndSector(begin,size)
                     #Adjust last partition size. do not let end sector count created go beyond the size of image                    
-                    if ptype == "primary" and  int(end) > int(imageEnd):
+                    if (ptype == "primary" or ptype == "extended") and  int(end) > int(imageEnd):
                         end = imageEnd
                     elif extendedStart == True and ptype == "logical" and int(end) > int(extendedEndSector):
                         end = extendedEndSector
-                    
+                        
+                    #restrict user to creating all logical parititions in one group after an extended paritition
+                    if primaryAfterExtended == True and ptype == "logical":
+                        logging.error("You need to group all logical parititions after Extended and then start a Primary paritition")
+                        sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA)
+                    #if primary partitions are created after extended just being at the next sector instead of +2048 from extended end sector
+                    if extendedStart == True and ptype == "primary" and primaryAfterExtended == False:
+                        primaryAfterExtended = True
+                        begin = str(int(extendedEndSector)+1)
+                        end = self.rbfUtils.calcParitionEndSector(begin,size)
                            
                     if fs == "swap":
                         fs = "linux-swap"
@@ -312,11 +366,9 @@ class BoardTemplateParser():
                     if ptype == "logical" and extendedStart == False:
                         logging.error("Cannot Create Logical Parititon before Extended")
                         sys.exit(BoardTemplateParser.LOGICAL_PART_ERROR)
-                    if ptype == "primary" and extendedStart == True:
-                        logging.error("Cannot Create Primary Parititon after Extended")
-                        sys.exit(BoardTemplateParser.PRIMARY_PART_ERROR)                        
                     elif ptype == "extended":
                         extendedStart = True
+                        extendedStartSector = begin
                         #need to start first logical partition after 2048 sectors
                         begin = str(int(begin) + int(self.rbfUtils.PARTITION_BEGIN))
                         extendedEndSector = end
@@ -340,8 +392,6 @@ class BoardTemplateParser():
 
     def createFilesystems(self):
         """Creates Filesystem"""
-        self.rbfScript.write("losetup " + self.loopDevice + " " + self.imagePath + " &>> rbf.log\n")
-        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.LOSETUP_ERROR))
         self.rbfScript.write("partprobe " + self.loopDevice + " &>> rbf.log\n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.PARTPROBE_ERROR))
         for i in range(0, len(self.imageData)):

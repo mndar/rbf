@@ -1,34 +1,56 @@
-echo [INFO ]   $0 Detacing Loop Device If Busy: /dev/loop1
-[ -b /dev/loop1 ] && losetup -d /dev/loop1 &>> rbf.log 
+echo [INFO ]   $0 Detacing Loop Device If Busy: /dev/loop0
+[ -b /dev/loop0 ] && losetup -d /dev/loop0 &>> rbf.log 
 sleep 2
-echo [INFO ]    $0 Creating odroidc1-image-local.img
-fallocate -l 3072M odroidc1-image-local.img &>> rbf.log 
+echo [INFO ]    $0 Creating rpi2-image.img
+fallocate -l 4096M rpi2-image.img &>> rbf.log 
 if [ $? != 0 ]; then exit 201; fi
 
-echo [INFO ]   $0 Creating Parititons
-parted odroidc1-image-local.img  --align optimal -s mklabel msdos mkpart primary fat32 2048s 1026047s mkpart primary ext4 1026048s 5220351s  &>> rbf.log 
-if [ $? != 0 ]; then echo [INFO ]  PARTED_ERROR: Could Not Partition Image;  read -p "Press Enter To Continue"; fi
-
-losetup /dev/loop1 odroidc1-image-local.img &>> rbf.log
+losetup /dev/loop0 rpi2-image.img &>> rbf.log
 if [ $? != 0 ]; then exit 220; fi
 
-partprobe /dev/loop1 &>> rbf.log
+echo [INFO ]   $0 Creating Parititons
+parted /dev/loop0 --align optimal -s mklabel msdos mkpart primary fat32 2048s 1026047s mkpart extended  1026048s 5122047s mkpart logical ext4 1028096s 3076095s mkpart logical ext4 3078144s 5122047s mkpart primary ext4 5122048s 7170047s mkpart primary ext4 7170048s 8388607s  &>> rbf.log 
+if [ $? != 0 ]; then echo [INFO ]  PARTED_ERROR: Could Not Partition Image;  read -p "Press Enter To Continue"; fi
+
+partprobe /dev/loop0 &>> rbf.log
 if [ $? != 0 ]; then exit 221; fi
 
-[ -b /dev/loop1p1 ] && echo [INFO ]   $0 Creating Filesystem vfat on partition 1 || exit 204
-mkfs.vfat -n 59B4781A /dev/loop1p1 &>> rbf.log 
-[ -b /dev/loop1p2 ] && echo [INFO ]   $0 Creating Filesystem ext4 on partition 2 || exit 204
-mkfs.ext4 -U 3c53006d-449e-4d59-bdf2-6c13964b9db5 /dev/loop1p2 &>> rbf.log 
+[ -b /dev/loop0p1 ] && echo [INFO ]   $0 Creating Filesystem vfat on partition 1 || exit 204
+mkfs.vfat -n B1909B3F /dev/loop0p1 &>> rbf.log 
+[ -b /dev/loop0p5 ] && echo [INFO ]   $0 Creating Filesystem ext4 on partition 5 || exit 204
+mkfs.ext4 -U 0399bec4-6ded-4dfd-91a8-9cf9987a223b /dev/loop0p5 &>> rbf.log 
+[ -b /dev/loop0p6 ] && echo [INFO ]   $0 Creating Filesystem ext4 on partition 6 || exit 204
+mkfs.ext4 -U 3f6df543-0c69-4de2-b880-b4aa6cb85657 /dev/loop0p6 &>> rbf.log 
+[ -b /dev/loop0p3 ] && echo [INFO ]   $0 Creating Filesystem ext4 on partition 3 || exit 204
+mkfs.ext4 -U ce25c52f-fce9-49a8-857d-41159da5f013 /dev/loop0p3 &>> rbf.log 
+[ -b /dev/loop0p4 ] && echo [INFO ]   $0 Creating Filesystem ext4 on partition 4 || exit 204
+mkfs.ext4 -U 9f68fa73-d067-440d-8a02-d425bdd0de9f /dev/loop0p4 &>> rbf.log 
 mkdir -p /tmp/temp
 if [ $? != 0 ]; then exit 222; fi
 
-echo [INFO ]   $0 Mouting Parititon 2 on /
-mount /dev/loop1p2 /tmp/temp/
+echo [INFO ]   $0 Mouting Parititon 5 on /
+mount /dev/loop0p5 /tmp/temp/
 if [ $? != 0 ]; then exit 205; fi
 
 mkdir -p /tmp/temp//boot
+mkdir -p /tmp/temp/
+mkdir -p /tmp/temp//mnt
+mkdir -p /tmp/temp//home
+mkdir -p /tmp/temp//var
 echo [INFO ]   $0 Mouting Parititon 1 on /boot
-mount /dev/loop1p1 /tmp/temp/boot
+mount /dev/loop0p1 /tmp/temp/boot
+if [ $? != 0 ]; then exit 205; fi
+
+echo [INFO ]   $0 Mouting Parititon 6 on /mnt
+mount /dev/loop0p6 /tmp/temp/mnt
+if [ $? != 0 ]; then exit 205; fi
+
+echo [INFO ]   $0 Mouting Parititon 3 on /home
+mount /dev/loop0p3 /tmp/temp/home
+if [ $? != 0 ]; then exit 205; fi
+
+echo [INFO ]   $0 Mouting Parititon 4 on /var
+mount /dev/loop0p4 /tmp/temp/var
 if [ $? != 0 ]; then exit 205; fi
 
 mkdir /tmp/temp/proc /tmp/temp/sys
@@ -63,20 +85,14 @@ EOF
 if [ $? != 0 ]; then exit 206; fi
 
 echo [INFO ]  $0 Copying Custom Kernel
-cp -rv files/odroidc1/uImage /tmp/temp/boot &>> rbf.log 
-if [ $? != 0 ]; then exit 207; fi
-
-cp -rv files/odroidc1/uInitrd /tmp/temp/boot &>> rbf.log 
-if [ $? != 0 ]; then exit 207; fi
-
-cp -rv files/odroidc1/meson8b_odroidc.dtb /tmp/temp/boot &>> rbf.log 
+cp -rv files/rpi2/kernel7.img /tmp/temp/boot &>> rbf.log 
 if [ $? != 0 ]; then exit 207; fi
 
 echo [INFO ]  $0 Copying Custom Kernel Modules
 mkdir -p /tmp/temp/lib/modules &>> rbf.log 
 if [ $? != 0 ]; then exit 207; fi
 
-cp -rv files/odroidc1/3.10.66-49 /tmp/temp/lib/modules/ &>> rbf.log 
+cp -rv files/rpi2/3.18.14-v7+ /tmp/temp/lib/modules/ &>> rbf.log 
 if [ $? != 0 ]; then exit 207; fi
 
 rpm --root /tmp/temp --initdb
@@ -95,8 +111,8 @@ if [ $? != 0 ]; then echo [INFO ]  ROOT_PASS_ERROR: Could Not Set Empty Root Pas
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /tmp/temp/etc/selinux/config  &>> rbf.log 
 if [ $? != 0 ]; then echo [INFO ]  SELINUX_ERROR: Could Not Set SELINUX Status;  read -p "Press Enter To Continue"; fi
 
-echo [INFO ]  $0 Running Board Script: ./boards.d/odroidc1.sh odroidc1-image-local.img files/odroid/bl1.bin.hardkernel files/odroidc1/u-boot.bin /tmp/temp files/odroidc1/boot.ini 2 3c53006d-449e-4d59-bdf2-6c13964b9db5
-./boards.d/odroidc1.sh odroidc1-image-local.img files/odroid/bl1.bin.hardkernel files/odroidc1/u-boot.bin /tmp/temp files/odroidc1/boot.ini 2 3c53006d-449e-4d59-bdf2-6c13964b9db5
+echo [INFO ]  $0 Running Board Script: ./boards.d/rpi2.sh /dev/loop0 none none /tmp/temp files/rpi2/boot_rpi2.tar.xz 5 0399bec4-6ded-4dfd-91a8-9cf9987a223b
+./boards.d/rpi2.sh /dev/loop0 none none /tmp/temp files/rpi2/boot_rpi2.tar.xz 5 0399bec4-6ded-4dfd-91a8-9cf9987a223b
 if [ $? != 0 ]; then echo [INFO ]  BOARD_SCRIPT_ERROR: Error In Board Script;  read -p "Press Enter To Continue"; fi
 
 echo [INFO ]  $0 Running Finalize Script: ./boards.d/finalize.sh

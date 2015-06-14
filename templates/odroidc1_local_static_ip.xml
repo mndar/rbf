@@ -8,7 +8,7 @@
     
     <packages>
         <group>@core</group>
-        <package></package>
+        <package>nano,file</package>
     </packages>
 
     <stage1loader>files/odroidc1/bl1.bin.hardkernel</stage1loader>

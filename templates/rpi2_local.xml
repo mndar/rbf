@@ -9,7 +9,7 @@
     
     <packages>
         <group>@core</group>
-        <package>net-tools</package>
+        <package>net-tools,nano,file</package>
     </packages>
 
     <stage1loader>none</stage1loader>
