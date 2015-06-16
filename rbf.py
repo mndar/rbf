@@ -770,7 +770,7 @@ class BoardTemplateParser():
                     ifcfg = open (networkConfigPath+"/ifcfg-"+name,"w")
                     ifcfg.write("TYPE=\"Ethernet\"\nBOOTPROTO=\"none\"\nNM_CONTROLLED=\"yes\"\nDEFROUTE=\"yes\"\nNAME=\""+name+"\"\nUUID=\""+str(uuid.uuid4())+"\"\nONBOOT=\"yes\"\nIPADDR0=\""+ipaddress+"\"\nNETMASK0=\""+subnetmask+"\"\nGATEWAY0=\""+gateway+"\"\nDNS1=\""+nameserver+"\"\n")                  
                     ifcfg.close()
-                    ifcfg = open (self.etcOverlay + "/resolv.conf", "a")
+                    ifcfg = open(self.etcOverlay + "/resolv.conf", "w")
                     ifcfg.write("nameserver " + nameserver+"\n")
                     ifcfg.close()
                 
