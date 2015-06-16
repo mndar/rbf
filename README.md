@@ -93,4 +93,3 @@ Note:
 1.  The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
 2.  files/cubietruck/u-boot-sunxi-with-spl.bin has been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
 3.  The kernel files/odroidc1 have been taken from Ubuntu 14.04. The u-boot files have been compiled from sources at https://github.com/hardkernel/u-boot.git
-4.  file/rpms have been generated from source at http://pythondialog.sourceforge.net/
