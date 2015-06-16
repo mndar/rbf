@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<template>
+	<board>cubietruck</board>
+	<image path="/home/mandar/code/061615/rbf//rootfs-image.img" size="4G" type="raw"/>
+	<partitions>
+		<partition fs="ext3" mountpoint="/boot" size="500M" type="primary"/>
+		<partition fs="swap" mountpoint="swap" size="1G" type="primary"/>
+		<partition fs="ext4" mountpoint="/" size="2G" type="primary"/>
+	</partitions>
+	<packages>
+		<group>@core</group>
+		<package>net-tools,ftp,nano,file</package>
+	</packages>
+	<stage1loader>none</stage1loader>
+	<uboot>/home/mandar/code/061615/rbf/files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
+	<rootfiles>none</rootfiles>
+	<firmware>none</firmware>
+	<kernel type="stock"/>
+	<config>
+		<hostname>cubietruck_rbf</hostname>
+		<selinux>disabled</selinux>
+		<network>
+			<interface config="dhcp" name="eth0"/>
+		</network>
+	</config>
+	<etcoverlay>./etc</etcoverlay>
+	<finalizescript>boards.d/finalize.sh</finalizescript>
+	<distro>CentOS</distro>
+	<repos>
+		<repo name="c7buildroot" path="ftp://192.168.1.3/c7buildroot/"/>
+		<repo name="c7pass1" path="ftp://192.168.1.3/c7pass1/"/>
+		<repo name="comps" path="ftp://192.168.1.3/comps/"/>
+	</repos>
+	<workdir>/tmp/temp</workdir>
+	<extlinuxconf>true</extlinuxconf>
+</template>

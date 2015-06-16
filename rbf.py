@@ -142,7 +142,7 @@ class BoardTemplateParser():
         """Parses xmlTemplate"""
         logging.info("Parsing: "+ self.xmlTemplate)
         try:
-            self.boardDom = xml.dom.minidom.parse(self.xmlTemplate)            
+            self.boardDom = xml.dom.minidom.parse(self.xmlTemplate)
         except:
             logging.error("Error Parsing XML Template File")
             sys.exit(BoardTemplateParser.ERROR_PARSING_XML)
@@ -293,7 +293,10 @@ class BoardTemplateParser():
         primaryAfterExtended = False
         extendedStartSector = "0"
         extendedEndSector = "0"
-        totalPartitionCount = 0
+        primaryStartSector =  self.rbfUtils.PARTITION_BEGIN
+        primaryEndSector = "0"
+        logicalEndSector = "0"
+        primaryPartitionCount = 0
         logicalPartitionCount = 0      
         begin = self.rbfUtils.PARTITION_BEGIN
         imageEnd = self.rbfUtils.calcParitionEndSector("0",self.imageSize)
@@ -314,13 +317,17 @@ class BoardTemplateParser():
                         logging.error("Cannot have more than 1 extended paritition")
                         sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA) 
                     
-                    if (ptype =="primary" or ptype == "extended") and totalPartitionCount == 4:
+                    if ptype == "logical" and extendedStart == False:
+                        logging.error("Cannot Create Logical Parititon before Extended")
+                        sys.exit(BoardTemplateParser.LOGICAL_PART_ERROR)
+                        
+                    if (ptype =="primary" or ptype == "extended") and primaryPartitionCount == 4:
                         logging.error("Cannot Have More Than 4 Primary Partitions")
                         sys.exit(BoardTemplateParser.TOTAL_PARTITIONS_ERROR)
 
                     if ptype == "primary" or ptype == "extended":
-                        totalPartitionCount = totalPartitionCount + 1
-                        index = str(totalPartitionCount)
+                        primaryPartitionCount = primaryPartitionCount + 1
+                        index = str(primaryPartitionCount)
                         
                     """Adjust partition indexes. parted seems to create logical partitions from index 5 irrespective of number of primary partitions created"""
                     if ptype == "logical":
@@ -331,60 +338,69 @@ class BoardTemplateParser():
                         self.rootDeviceIndex = index
                         self.rootDeviceUUID = partuuid
                     #ignore filesystem and mountpoint for extended partition
-                    if ptype == "extended":
+                    if ptype == "extended" and extendedStart == False:                        
                         fs=""
                         mountpoint=""
-                            
+                        extendedStart = True
+                        extendedStartSector = str(int(primaryEndSector) + 1)
+                        extendedEndSector = self.rbfUtils.calcParitionEndSector(extendedStartSector,size)
+                    
+                    #fix mountpoint for swap
+                    if fs == "swap":
+                        mountpoint = "swap"
+                        
+                    #if this is the first partition start at sector 2048
+                    if primaryPartitionCount == 1:
+                        begin = self.rbfUtils.PARTITION_BEGIN        
+                        end = self.rbfUtils.calcParitionEndSector(begin,size)
+                        primaryEndSector = end
+                    elif ptype in ("primary","extended"):
+                        begin = str(int(primaryEndSector) + 1)
+                        end = self.rbfUtils.calcParitionEndSector(begin,size)
+                        #don't go beyond image end
+                        if int(end) > int(imageEnd):
+                            end = imageEnd
+                        if ptype == "primary":
+                            primaryEndSector = end
+                        elif ptype == "extended":
+                            extendedEndSector = end
+                            primaryEndSector = extendedEndSector
+                    elif ptype == "logical" and logicalPartitionCount == 1:
+                        #need to start first logical partitions after 2048 sectors
+                        begin = str(int(extendedStartSector) + int(self.rbfUtils.PARTITION_BEGIN))
+                        end = self.rbfUtils.calcParitionEndSector(begin,size)
+                        #don't go beyong extended sector end
+                        if int(end) > int(extendedEndSector):
+                            end = extendedEndSector
+                        logicalEndSector = end
+                    elif ptype == "logical" and logicalPartitionCount > 1:
+                        #need to start new logical partitions after 2049 sectors
+                        begin = str(int(logicalEndSector) + int(self.rbfUtils.PARTITION_BEGIN) + 1)
+                        end = self.rbfUtils.calcParitionEndSector(begin,size)
+                        logging.info("Logical: " + begin + " " + end)
+                        #don't go beyong extended sector end
+                        if int(end) > int(extendedEndSector):
+                            end = extendedEndSector
+                        logicalEndSector = end
+                     
+                    
                     logging.info("Creating Partition " + index + " " + size + " " + ptype + " " + fs + " " + mountpoint + " " + partuuid)
                         
                     x = [index, size, begin, ptype, fs, mountpoint, partuuid]
                     self.imageData.append(x)
                     
-                    end = self.rbfUtils.calcParitionEndSector(begin,size)
-                    #Adjust last partition size. do not let end sector count created go beyond the size of image                    
-                    if (ptype == "primary" or ptype == "extended") and  int(end) > int(imageEnd):
-                        end = imageEnd
-                    elif extendedStart == True and ptype == "logical" and int(end) > int(extendedEndSector):
-                        end = extendedEndSector
-                        
-                    #restrict user to creating all logical parititions in one group after an extended paritition
-                    if primaryAfterExtended == True and ptype == "logical":
-                        logging.error("You need to group all logical parititions after Extended and then start a Primary paritition")
-                        sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA)
-                    #if primary partitions are created after extended just being at the next sector instead of +2048 from extended end sector
-                    if extendedStart == True and ptype == "primary" and primaryAfterExtended == False:
-                        primaryAfterExtended = True
-                        begin = str(int(extendedEndSector)+1)
-                        end = self.rbfUtils.calcParitionEndSector(begin,size)
-                           
+                    #parted names swap as linux-swap and vfat as fat32
                     if fs == "swap":
                         fs = "linux-swap"
                     elif fs == "vfat":
                         fs = "fat32"
                     partedString = partedString + "mkpart " + ptype + " " + fs + " " + begin + "s " + end + "s "
-                    
-                    if ptype == "logical" and extendedStart == False:
-                        logging.error("Cannot Create Logical Parititon before Extended")
-                        sys.exit(BoardTemplateParser.LOGICAL_PART_ERROR)
-                    elif ptype == "extended":
-                        extendedStart = True
-                        extendedStartSector = begin
-                        #need to start first logical partition after 2048 sectors
-                        begin = str(int(begin) + int(self.rbfUtils.PARTITION_BEGIN))
-                        extendedEndSector = end
-                    elif ptype == "logical":
-                        #need to start new logical partitions after 2049 sectors
-                        begin = str(int(end) + int(self.rbfUtils.PARTITION_BEGIN) + 1) 
-                    else:
-                        #in case of primary partitions we just start at the next sector
-                        begin = str(int(end) + 1)
                 else:
                     logging.error("Invalid Partition Data")
                     sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA)
-                    
             self.rbfScript.write("echo [INFO ]   $0 Creating Parititons\n")
             self.rbfScript.write(partedString + " &>> rbf.log \n")
-            self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.PARTED_ERROR))
+            self.rbfScript.write(self.getShellExitString(BoardTemplateParser.PARTED_ERROR))
 
     def delDeviceIfExists(self, device):
         """Generates command to detach loop device if it exists"""
