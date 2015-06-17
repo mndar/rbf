@@ -180,15 +180,16 @@ class BoardTemplateParser():
             self.imageSize = imageDom.getAttribute("size")
             imageType = imageDom.getAttribute("type")
             self.imagePath = imageDom.getAttribute("path")
-            if self.imageSize[len(self.imageSize)-1] == "M" or self.imageSize[len(self.imageSize)-1] == "G":
+            if self.imageSize[-1:] in ("M","G") and self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
                 logging.info("Creating Image: " + self.imageSize + " " + imageType + " " + self.imagePath)
             else:
-                 logging.error("Invalid Image Size: " + self.imageSize)
+                 logging.error("Invalid Image Size: " + self.imageSize + " (Has to be an Integer with suffix M for MB and G for GB)")
                  sys.exit(BoardTemplateParser.ERROR_IMAGE_FILE)   
         else:
             logging.error("No image tag found or image tag incomplete.")
             sys.exit(BoardTemplateParser.ERROR_IMAGE_FILE)
     
+        
         self.imageSize = self.rbfUtils.getImageSizeInM(self.imageSize)
 
         if os.path.exists(self.imagePath):
