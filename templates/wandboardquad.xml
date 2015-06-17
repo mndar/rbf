@@ -1,6 +1,6 @@
 <template>    
     <board>wandboardquad</kboard>
-    <image size="4G" type="raw" path="cubietruck-centos-image.img"></image>
+    <image size="4G" type="raw" path="wandboardquad-centos-image.img"></image>
     <partitions>
         <partition size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
         <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
