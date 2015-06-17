@@ -7,6 +7,25 @@ Mentor: Ian McLeod [imcleod at redhat.com]
 This project is still in the development stage.
 I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
 
+Tested Emulators
+1. Qemu
+
+Tested Boards:
+1. Cubietruck
+2. Odroid C1
+3. Raspberry Pi 2
+
+Untested Boards:
+1. Banana Pi
+2. Cubieboard
+3. Cubieboard 2
+4. Wandboard{solo,dual,quad}
+5. Pandaboard
+6. CompuLab TrimSlice
+7. Beaglebone
+
+
+If you have any of the untested boards, please test the RootFS Build Factory and let us know the results. You can email me [emailmandar at gmail.com]
 
 Usage of rbf.py:
 Note: One of the initial checks rbf.py makes is if you have the required programs to generate images. My test setup is Fedora 21 ARM on Cubietruck
