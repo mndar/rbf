@@ -1,0 +1,47 @@
+<template>    
+    <board>pandaboard</board>
+    <image size="3G" type="raw" path="pandaboard-image-local.img"></image>
+    <partitions>
+        <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <group>@core</group>
+        <package></package>
+    </packages>
+
+    <stage1loader>files/pandaboard/MLO</stage1loader>
+    <uboot>files/pandaboard/u-boot.img</uboot>
+    <rootfiles>none</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="stock">
+    </kernel>
+
+    <config>
+        <hostname>pandaboard</hostname>
+        <selinux>disabled</selinux>
+        <network>
+            <interface name="eth0" config="static">
+                <ipaddress>192.168.1.155</ipaddress>
+                <subnetmask>255.255.255.0</subnetmask>
+                <gateway>192.168.1.1</gateway>
+                <nameserver>8.8.8.8</nameserver>
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>centos</distro>
+    <repos>
+        <repo name="c7buildroot" path="http://armv7.dev.centos.org/repodir/c7-buildroot/"></repo>
+        <repo name="c7pass1" path="http://armv7.dev.centos.org/repodir/c7-pass-1/"></repo>
+        <repo name="comps" path="http://armv7.dev.centos.org/repodir/comps/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>false</extlinuxconf>
+    
+ </template>
+ 
