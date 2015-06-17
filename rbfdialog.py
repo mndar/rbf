@@ -88,7 +88,7 @@ class BoardTemplateCreator():
             if code in (Dialog.CANCEL, Dialog.ESC):
                 break
             while True:
-                (code, filesize) = self.dialogInstance.inputbox("Please enter a size with suffix M for Megabytes and G for Gigabyes", init="4G")
+                (code, filesize) = self.dialogInstance.inputbox("Please enter a size with suffix M for Megabytes and G for Gigabytes", init="4G")
                 if code in (Dialog.CANCEL, Dialog.ESC):
                     break
                 if not (filesize[0:-1] == "M" or filesize[0:-1] == "G"):
@@ -105,20 +105,20 @@ class BoardTemplateCreator():
             partitionDisplayString="No Partitions Defined"
         else:
             partitionDisplayString=""
-            #partitionDisplayString="Index\tSize\tType\tFilesystem\tMountPoint\n"            
-            #partitionDisplayString= "%-10s\t%-10s\t%-10s\t%-10s\t%-10s\n" % ("Index", "Size", "Type", "Filesystem", "MountPoint")
+            partitionDisplayString= "%-6s%-8s%-10s%-5s%-10s\n\n" % ("Index", "Size", "Type", "FS", "MountPoint")
             for i in range(0, len(self.imageData)):
-                #partitionDisplayString = partitionDisplayString + ("%-10s %-10s %-10s %-10s %-10s\n") % (str(i+1), self.imageData[i][BoardTemplateCreator.SIZE], self.imageData[i][BoardTemplateCreator.PTYPE], self.imageData[i][BoardTemplateCreator.FS], self.imageData[i][BoardTemplateCreator.MOUNTPOINT])
-                #partitionDisplayString = partitionDisplayString + "{0:-20}{1:20}{2:20}{3:20}{4:20}\n".format(str(i+1), self.imageData[i][BoardTemplateCreator.SIZE], self.imageData[i][BoardTemplateCreator.PTYPE], self.imageData[i][BoardTemplateCreator.FS], self.imageData[i][BoardTemplateCreator.MOUNTPOINT])
-                partitionDisplayString = partitionDisplayString + str(i+1).expandtabs(20) + "\t".expandtabs(20) + self.imageData[i][BoardTemplateCreator.SIZE] + "\t".expandtabs(20) + self.imageData[i][BoardTemplateCreator.PTYPE] + "\t".expandtabs(20) + self.imageData[i][BoardTemplateCreator.FS] + "\t".expandtabs(20) + self.imageData[i][BoardTemplateCreator.MOUNTPOINT] + "\n"
-            print(partitionDisplayString)
+                partitionDisplayString = partitionDisplayString + ("%-6s%-8s%-10s%-5s%-10s\n") % (str(i+1), self.imageData[i][BoardTemplateCreator.SIZE], self.imageData[i][BoardTemplateCreator.PTYPE], self.imageData[i][BoardTemplateCreator.FS], self.imageData[i][BoardTemplateCreator.MOUNTPOINT])
         return partitionDisplayString
     
     def validatePartitionData(self, fields):
         if self.imageSize == "":
             self.dialogInstance.msgbox("Please create an Image first")
             return False
-       
+        sizeNumber = fields[BoardTemplateCreator.SIZE][0:-1]
+        if not self.rbfUtils.isSizeInt(sizeNumber):
+            self.dialogInstance.msgbox("Invalid Size. Has to be an Integer with suffix M for MB and G for GB",width=80,title="Partition Size Error")
+            return False
+            
         if fields[BoardTemplateCreator.SIZE][-1:] not in ("M","G"):
             self.dialogInstance.msgbox("Invalid Size. Has to be an Integer with suffix M for MB and G for GB",width=80,title="Partition Size Error")
             return False
@@ -133,7 +133,14 @@ class BoardTemplateCreator():
             return False
             
         #check if total size of primary partitions exceed image size
-        if fields[BoardTemplateCreator.PTYPE].lower() in ("primary","extended"):            
+        if fields[BoardTemplateCreator.PTYPE].lower() in ("primary","extended"):
+            #check if imagesize is a valid one
+            if not self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
+                self.dialogInstance.msgbox("Invalid Image Size: "+ self.imageSize + "\nYou will have to enter image and parition information manually.",title="Image Size Error")
+                self.imagePath = ""
+                self.imageSize = ""
+                return False
+                
             imageSizeInM = int(self.rbfUtils.getImageSizeInM(self.imageSize)[0:-1])
             primaryPartSize = 0
             for i in range(0,len(self.imageData)):
@@ -170,12 +177,12 @@ class BoardTemplateCreator():
             
     def addPartition(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getPartitionDisplayString(), width=50, extra_button=True, extra_label="Add", title="Partition Details")
+            code = self.dialogInstance.scrollbox(self.getPartitionDisplayString(), width=50, extra_button=True, extra_label="Add", title="Partition Details")
             if code == Dialog.EXTRA:
                 elements = [ ("Size (M/G)", 1, 1, "1G", 1, 20, 8, 8),
                              ("Partition Type", 2, 1, "Primary", 2, 20, 8, 8),
-                             ("Filesystem", 3, 1, "ext3", 3, 20, 8, 4),
-                             ("Mount Point", 4, 1, "/", 4, 20, 8, 8)]
+                             ("Filesystem", 3, 1, "ext3", 3, 20, 8, 8),
+                             ("Mount Point", 4, 1, "/", 4, 20, 8, 20)]
                              
                 (code, fields) = self.dialogInstance.form("Partition Info",elements,width=50)
                 
@@ -214,7 +221,7 @@ class BoardTemplateCreator():
         
     def deletePartition(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getPartitionDisplayString(), width=50, extra_button=True, extra_label="Delete", title="Partition Details")
+            code = self.dialogInstance.scrollbox(self.getPartitionDisplayString(), width=50, extra_button=True, extra_label="Delete", title="Partition Details")
             if code == Dialog.EXTRA:
                 (code, number) = self.dialogInstance.inputbox("Partition Number to Delete", init="",title="Delete")
                 if self.rbfUtils.isSizeInt(number):
@@ -229,7 +236,7 @@ class BoardTemplateCreator():
    
                 
     def showPartition(self):
-        code = self.dialogInstance.msgbox(self.getPartitionDisplayString(),title="Partition Details",width=50)
+        code = self.dialogInstance.scrollbox(self.getPartitionDisplayString(),title="Partition Details",width=50)
         
     def showPartitionInfo(self):        
         """Create Partition Layout"""
@@ -239,7 +246,7 @@ class BoardTemplateCreator():
             width=60,
             choices=[("Add", "Add a Partition"),
                      ("Delete", "Delete a Partition"),
-                     ("Show", "Define Partition Layout"),
+                     ("Show", "Show Partition Layout"),
                      ("Done", "Select this if you are done configuring")])
             
             if tag == "Add":
@@ -388,7 +395,7 @@ class BoardTemplateCreator():
     
     def addRepo(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getRepoDisplayString(), width=100, extra_button=True, extra_label="Add Repo", title="Repo Details")
+            code = self.dialogInstance.scrollbox(self.getRepoDisplayString(), width=100, extra_button=True, extra_label="Add Repo", title="Repo Details")
             if code == Dialog.EXTRA:
                 elements = [ ("Name", 1, 1, "", 1, 20, 20, 20),
                              ("BaseURL", 2, 1, "", 2, 20, 20, 512)]
@@ -403,7 +410,7 @@ class BoardTemplateCreator():
     
     def deleteRepo(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getRepoDisplayString(), width=100, extra_button=True, extra_label="Del Repo", title="Repo Details")
+            code = self.dialogInstance.scrollbox(self.getRepoDisplayString(), width=100, extra_button=True, extra_label="Del Repo", title="Repo Details")
             if code == Dialog.EXTRA:
                 (code, number) = self.dialogInstance.inputbox("Repo Number to Delete", init="",title="Delete")
                 if self.rbfUtils.isSizeInt(number):
@@ -417,12 +424,12 @@ class BoardTemplateCreator():
                 break
                                 
     def showRepo(self):
-        code = self.dialogInstance.msgbox(self.getRepoDisplayString(),title="Repo Details",width=100)
+        code = self.dialogInstance.scrollbox(self.getRepoDisplayString(),title="Repo Details",width=100)
     
     def getRepoDisplayString(self):
-        repoDisplayString = ""
+        repoDisplayString = "%-6s%-20s%-50s\n\n"%("Index","Name","BaseURL")
         for i in range(0,len(self.repoData)):
-            repoDisplayString = repoDisplayString + str(i+1) + "\t" + self.repoData[i][BoardTemplateCreator.REPO_NAME] + "\t" + self.repoData[i][BoardTemplateCreator.REPO_URL] + "\n"
+            repoDisplayString = repoDisplayString + ("%-6s%-20s%-50s\n") % (str(i+1),self.repoData[i][BoardTemplateCreator.REPO_NAME],self.repoData[i][BoardTemplateCreator.REPO_URL])
         return repoDisplayString
        
     def showEditRepoForm(self,n):
@@ -439,7 +446,7 @@ class BoardTemplateCreator():
     
     def editRepo(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getRepoDisplayString(), width=100, extra_button=True, extra_label="Edit Repo", title="Repo Details")
+            code = self.dialogInstance.scrollbox(self.getRepoDisplayString(), width=100, extra_button=True, extra_label="Edit Repo", title="Repo Details")
             if code == Dialog.EXTRA:
                 (code, number) = self.dialogInstance.inputbox("Repo Number to Edit", init="",title="Edit")
                 if self.rbfUtils.isSizeInt(number):
@@ -507,6 +514,10 @@ class BoardTemplateCreator():
         imageDom = self.boardDom.getElementsByTagName("image")[0]
         self.imagePath = imageDom.getAttribute("path")
         self.imageSize = imageDom.getAttribute("size")
+        if self.imageSize[-1:] not in ("M","G") or not self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
+            self.dialogInstance.msgbox("Invalid Image Size: " + self.imageSize + " (Has to be an Integer with suffix M for MB and G for GB)")
+            self.imageSize = ""
+            self.imagePath = ""
         
         kernelDom = self.boardDom.getElementsByTagName("kernel")
         for k in kernelDom:
@@ -524,20 +535,30 @@ class BoardTemplateCreator():
         self.primaryCount = 0
         self.totalPartitionCount = 0
         self.extendedStart = False
+        invalidPartitionData = False
         partitionsDom = self.boardDom.getElementsByTagName("partitions")
         for partitions in partitionsDom:
             partition = partitions.getElementsByTagName("partition")
             for p in partition:
                 ptype = p.getAttribute("type")
                 pdata = [p.getAttribute("size"), ptype, p.getAttribute("fs"), p.getAttribute("mountpoint")]
-                self.imageData.append(pdata)
-                self.totalPartitionCount = self.totalPartitionCount + 1
-                if ptype in ("primary","extended"):
-                    self.primaryCount = self.primaryCount + 1
-                if self.extendedStart == True and ptype == "extended":
-                    self.dialogInstance.msgbox("Cannot have more than 1 Extended Partition",title="Partition Error")
-                if ptype == "extended":
-                    self.extendedStart = True
+                if self.validatePartitionData(pdata):
+                    if ptype in ("primary","extended"):
+                        self.primaryCount = self.primaryCount + 1
+                    if ptype == "extended":
+                        self.extendedStart = True
+                    self.imageData.append(pdata)
+                    self.totalPartitionCount = self.totalPartitionCount + 1
+                else:
+                    invalidPartitionData = True
+                    break
+            if invalidPartitionData:
+                self.imageData = []    
+                self.primaryCount = 0
+                self.totalPartitionCount = 0
+                self.extendedStart = False
+                self.dialogInstance.msgbox("Invalid Partition Data.\nYou will have to create partitions manually",title="Partition Error")
+                break
        
         self.repoData = []
         self.totalRepos = 0
@@ -569,10 +590,14 @@ class BoardTemplateCreator():
                 name = i.getAttribute("name").lower()
                 config = i.getAttribute("config").lower()
                 if config == "static":
-                    ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
-                    subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
-                    gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
-                    nameserver = i.getElementsByTagName("nameserver")[0].childNodes[0].data
+                    try:
+                        ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
+                        subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
+                        gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
+                        nameserver = i.getElementsByTagName("nameserver")[0].childNodes[0].data
+                    except:
+                        self.dialogInstance.msgbox("Invalid static interface config.\nNot adding interface " + name)
+                        break
                 else:
                     ipaddress = ""
                     subnetmask = ""
@@ -587,7 +612,7 @@ class BoardTemplateCreator():
         
     def addInterface(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getNetworkDisplayString(), width=100, extra_button=True, extra_label="Add Interface", title="Network Interface Details")
+            code = self.dialogInstance.scrollbox(self.getNetworkDisplayString(), width=100, extra_button=True, extra_label="Add Interface", title="Network Interface Details")
             if code == Dialog.EXTRA:
                 elements = [ ("Name", 1, 1, "eth0", 1, 20, 8, 8),
                              ("Config(DHCP/Static)", 2, 1, "dhcp", 2, 20, 8, 8),
@@ -607,7 +632,7 @@ class BoardTemplateCreator():
     
     def deleteInterface(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getNetworkDisplayString(), width=100, extra_button=True, extra_label="Del Interface", title="Network Interface Details")
+            code = self.dialogInstance.scrollbox(self.getNetworkDisplayString(), width=100, extra_button=True, extra_label="Del Interface", title="Network Interface Details")
             if code == Dialog.EXTRA:
                 (code, number) = self.dialogInstance.inputbox("Interface Number to Delete", init="",title="Delete")
                 if self.rbfUtils.isSizeInt(number):
@@ -621,12 +646,12 @@ class BoardTemplateCreator():
                 break
                                 
     def showInterface(self):
-        code = self.dialogInstance.msgbox(self.getNetworkDisplayString(), width=100, title="Network Interface Details")
+        code = self.dialogInstance.scrollbox(self.getNetworkDisplayString(), width=100, title="Network Interface Details")
     
     def getNetworkDisplayString(self):
-        networkDisplayString = ""
+        networkDisplayString = "%-6s%-5s%-7s%-16s%-16s%-16s%-16s%-16s\n\n" % ("Index","Name","Config","IP","Netmask","Gateway","DNS1","DNS2")
         for i in range(0,len(self.networkData)):
-            networkDisplayString = networkDisplayString + str(i+1) + "\t" + self.networkData[i][BoardTemplateCreator.IF_NAME] + "\t" + self.networkData[i][BoardTemplateCreator.IF_CONFIG] + "\t" + self.networkData[i][BoardTemplateCreator.IF_IP] + "\t" + self.networkData[i][BoardTemplateCreator.IF_NETMASK] + "\t" + self.networkData[i][BoardTemplateCreator.IF_GATEWAY] + "\t" + self.networkData[i][BoardTemplateCreator.IF_DNS1] + "\t" + self.networkData[i][BoardTemplateCreator.IF_DNS2] + "\n"
+            networkDisplayString = networkDisplayString + "%-6s%-5s%-7s%-16s%-16s%-16s%-16s%-16s\n" % (str(i+1),self.networkData[i][BoardTemplateCreator.IF_NAME],self.networkData[i][BoardTemplateCreator.IF_CONFIG],self.networkData[i][BoardTemplateCreator.IF_IP],self.networkData[i][BoardTemplateCreator.IF_NETMASK],self.networkData[i][BoardTemplateCreator.IF_GATEWAY],self.networkData[i][BoardTemplateCreator.IF_DNS1],self.networkData[i][BoardTemplateCreator.IF_DNS2])
         return networkDisplayString
     
     def showEditInterfaceForm(self,n):
@@ -653,7 +678,7 @@ class BoardTemplateCreator():
             
     def editInterface(self):
         while True:
-            code = self.dialogInstance.msgbox(self.getNetworkDisplayString(), width=100, extra_button=True, extra_label="Edit Interface", title="Network Interface Details")
+            code = self.dialogInstance.scrollbox(self.getNetworkDisplayString(), width=100, extra_button=True, extra_label="Edit Interface", title="Network Interface Details")
             if code == Dialog.EXTRA:
                 (code, number) = self.dialogInstance.inputbox("Interface Number to Edit", init="",title="Edit")
                 if self.rbfUtils.isSizeInt(number):
@@ -729,8 +754,8 @@ class BoardTemplateCreator():
                 (code, self.groupPackageString) = self.dialogInstance.inputbox("Comma Separated List of Groups",title="Package Groups", init=self.groupPackageString)
             elif tag == "Packages":
                 (code, self.packageString) = self.dialogInstance.inputbox("Comma Separated List of Packages", title="Packages", init=self.packageString)
-                
-    def writeTemplate(self):
+
+    def generateTemplate(self):
         doc = Document()
         root = doc.createElement("template")
         board = doc.createElement("board")
@@ -829,7 +854,12 @@ class BoardTemplateCreator():
             repo.setAttribute("path",self.repoData[i][BoardTemplateCreator.REPO_URL])
         
         workdir.appendChild(doc.createTextNode(self.workDir))
-        extlinuxconf.appendChild(doc.createTextNode(self.extlinuxConf))
+        extlinuxconf.appendChild(doc.createTextNode(self.extlinuxConf))           
+        return doc.toprettyxml()
+             
+    def writeTemplate(self):
+        
+        xmlData = self.generateTemplate()
         
         (code , dirpath) = self.dialogInstance.dselect(self.lastKnownPath,10,50,title="Select Directory to Save Template")
         if code == Dialog.OK:
@@ -838,7 +868,7 @@ class BoardTemplateCreator():
                 try:
                     self.generatedXmlPath = dirpath + os.sep + filename
                     fileWriter = open(self.generatedXmlPath,"w")
-                    fileWriter.write(doc.toprettyxml())
+                    fileWriter.write(xmlData)
                     fileWriter.close()
                     self.dialogInstance.msgbox("Saved Template to " + self.generatedXmlPath, width=80, title="Save Template")
                 except:
@@ -847,7 +877,7 @@ class BoardTemplateCreator():
    
     def generateImage(self):
         if self.getFilename(self.generatedXmlPath) == "":
-            self.dialogInstance.msgbox("No XML Generated Yet. Please select 'Save Template' first")
+            self.dialogInstance.msgbox("No XML Generated Yet. Please select 'Save Template' first",width=80,title="No XML Generated Yet")
             return
         if not os.path.exists(self.generatedXmlPath):
             self.dialogInstance.msgbox(self.generatedXmlPath + "does not exist")
@@ -859,10 +889,14 @@ class BoardTemplateCreator():
             return filepath
         return filepath[filepath.rfind("/")+1:]
     
+    def viewTemplate(self):
+        xmlData = self.generateTemplate()
+        self.dialogInstance.scrollbox(xmlData)
+    
     def mainMenu(self):
         """Displays Main RootFS Build Factory Menu"""
         while True:
-            (code, tag) = self.dialogInstance.menu("Main Menu",width=60, height=20, menu_height=20,
+            (code, tag) = self.dialogInstance.menu("Main Menu",width=60, height=22, menu_height=22,
             choices=[("Load Template", self.xmlTemplate[self.xmlTemplate.rfind("/")+1:]),
                      ("Board Info", "Selected Board: " + self.boardName),
                      ("Image Path", "Image: " + self.imagePath + " " + self.imageSize),
@@ -873,6 +907,7 @@ class BoardTemplateCreator():
                      ("Packages", "Packages to Install"),
                      ("Misc", "Misc Settings"),
                      ("System Config", "System Settings"),
+                     ("View Template", "View Current Template"),
                      ("Save Template", "Filename: " + self.getFilename(self.generatedXmlPath)),
                      ("Generate Image", "Using Template: " + self.getFilename(self.generatedXmlPath)),
                      ("Exit", "Exit Board Template Writer")])
@@ -899,6 +934,8 @@ class BoardTemplateCreator():
                 self.showMiscInfo()
             elif tag == "System Config":
                 self.showSysConfig()
+            elif tag == "View Template":
+                self.viewTemplate()
             elif tag == "Save Template":
                 self.writeTemplate();
             elif tag == "Generate Image":
