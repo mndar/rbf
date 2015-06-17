@@ -82,7 +82,12 @@ Note: One of the initial checks rbf.py makes is if you have the required program
     It boots from NAND flash instead of the microsd card. Just rebooting by pressing the button on the side fixes the problem for me.
     
 - DBus, NetworkManager don't start on the Raspberry Pi 2 and ODroid C1. Have to run dhclient manually.
-
+  To fix this you need to copy dbus.service and dbus.socket from /lib/systemd/system/ to /usr/lib/systemd/system and create a symlink for dbus.socket in dbus.target.wants
+    cd /usr/lib/systemd/system
+    cp /lib/systemd/system/dbus.s* .
+    cd dbus.target.wants/
+    ln -s ../dbus.socket .
+    reboot
 
 **Usage of scripts in commonscripts:**
 
