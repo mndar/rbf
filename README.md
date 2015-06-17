@@ -94,21 +94,26 @@ Note: One of the initial checks rbf.py makes is if you have the required program
 
 - expandimage.sh $FILE $EXPANDBY
     Expands $FILE by $EXPAND. Uses fallocate to expand the provided file
-    Eg. commonscripts/expandimage.sh disk.img 4096M
+    
+        commonscripts/expandimage.sh disk.img 4096M
 
 - loopdevcreate.sh $FILE $LOOPDEVICE
     Creates a loop back device for provide partition. Can be use to create /dev/loop* for partition from raw disk image.
-    Eg. commonscripts/loopdevcreate.sh disk.img /dev/loop0
+    
+        commonscripts/loopdevcreate.sh disk.img /dev/loop0
     To Detach, use losetup -d
-    Eg. losetup -d /dev/loop0
+    
+        losetup -d /dev/loop0
     
 - mountpart.sh $FILE $PARTITION $MOUNTPOINT
     Mounts specified partition from disk image to mount point.
-    Eg. commonscripts/mountpart.sh disk.img 1 /media/pendrive/
+    
+        commonscripts/mountpart.sh disk.img 1 /media/pendrive/
     
 - writeimage.sh $FILE $DEVICE
     Informs user which device will be written to (displays vendor and model) before executing the dd command
-    Eg. commonscripts/writeimage.sh centos.img /dev/sdd
+    
+        commonscripts/writeimage.sh centos.img /dev/sdd
 
 **Usage of yumplugins/extlinuxconf.py:**
 
