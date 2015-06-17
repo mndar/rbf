@@ -3,8 +3,11 @@ RootFS Build Factory
 Being developed for Google Summer Of Code 2015
 ----------------------------------------------
 *Organization: CentOS*
+
 *Written By: Mandar Joshi [emailmandar at gmail.com]*
+
 *Mentor: Ian McLeod [imcleod at redhat.com]*
+
 
 This project is still in the development stage.
 I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
@@ -33,37 +36,36 @@ If you have any of the untested boards, please test the RootFS Build Factory and
 
 Note: One of the initial checks rbf.py makes is if you have the required programs to generate images. My test setup is Fedora 21 ARM on Cubietruck
 
-1.  Edit template/cubietruck.xml and set image path in the image tag
+- Edit template/cubietruck.xml and set image path in the image tag
 
-2.  Set repository information as per your distro. templates/cubietruck.xml and templates/rpi2.xml are bare minimum ones.
-    You can even specify a local repository if you have one. The provided info is used as baseurl.
+- Set repository information as per your distro. templates/cubietruck.xml and templates/rpi2.xml are bare minimum ones.
+  You can even specify a local repository if you have one. The provided info is used as baseurl.
 
-3.  To just parse the XML Template
-    ./rbf.py parse templates/cubietruck.xml
+- To just parse the XML Template
+  ./rbf.py parse templates/cubietruck.xml
 
-4.  To Also build image. You need to be root
-    ./rbf.py build templates/cubietruck.xml
+- To Also build image. You need to be root
+  ./rbf.py build templates/cubietruck.xml
 
-5.  Follow the output of the script. 
-    Presently it prompts you to press Enter after every step.
-    The script uses the yum command to installpackages. The yum command asks you whether to continue with y/d/N after resolving dependencies.
+- Follow the output of the script. 
+  Presently it prompts you to press Enter after every step.
+  The script uses the yum command to installpackages. The yum command asks you whether to continue with y/d/N after resolving dependencies.
 
-6.  Once the image is generated write it your microsd card using dd or dcfldd
-    Eg. dcfldd if=cubietruck-centos-image.img of=/dev/sdb 
+- Once the image is generated write it your microsd card using dd or dcfldd
+  Eg. dcfldd if=cubietruck-centos-image.img of=/dev/sdb 
 
-7.  Just login as root. No password is required. 
-    The default config of u-boot is set as console=ttyS0,115200
-    If you want to see the boot messages you will need a USB to TTL Cable.
-    The provided u-boot for cubietruck supports HDMI console. However USB Keyboard is not supported.
+- Just login as root. No password is required. 
+  The default config of u-boot is set as console=ttyS0,115200
+  If you want to see the boot messages you will need a USB to TTL Cable.
+  The provided u-boot for cubietruck supports HDMI console. However USB Keyboard is not supported.
     
-8.  With the Cubietruck, once booted you will get the login prompt on tty0.
+- With the Cubietruck, once booted you will get the login prompt on tty0.
 
-9.  Default network config is left alone.
+- You can experiment with different templates. You can use custom built kernels too. See templates/cubietruck_centos.xml
+  
+- The group and package tags in the packages element take comma separated package names as well.
 
-10. You can experiment with different templates. You can use custom built kernels too. See templates/cubietruck_centos.xml
-    The group and package tags in the packages element take comma separated package names as well.
-
-** Known Issues: **
+**Known Issues:**
 
 - While installing @core in CentOS, sometimes yum gives following messages for these two packages. However the image generated is bootable.
     Note: rbf.py just uses yum --installroot to install packages.
@@ -82,7 +84,7 @@ Note: One of the initial checks rbf.py makes is if you have the required program
 - DBus, NetworkManager don't start on the Raspberry Pi 2 and ODroid C1. Have to run dhclient manually.
 
 
-** Usage of scripts in commonscripts: **
+**Usage of scripts in commonscripts:**
 
 - expandimage.sh $FILE $EXPANDBY
     Expands $FILE by $EXPAND. Uses fallocate to expand the provided file
@@ -102,7 +104,7 @@ Note: One of the initial checks rbf.py makes is if you have the required program
     Informs user which device will be written to (displays vendor and model) before executing the dd command
     Eg. commonscripts/writeimage.sh centos.img /dev/sdd
 
-** Usage of yumplugins/extlinuxconf.py: **
+**Usage of yumplugins/extlinuxconf.py:**
 
 This plugin appends entries to /boot/extlinux/extlinux.conf everytime kernel-core is installed or updated.
 Thus making your new kernel bootable.
@@ -113,7 +115,7 @@ Thus making your new kernel bootable.
   cp yumplugins/extlinuxconf.conf /etc/yum/pluginconf.d/
     
 
-** Note: **
+**Note:**
 - The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
 - files/cubietruck/u-boot-sunxi-with-spl.bin has been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
 - The kernel files/odroidc1 have been taken from Ubuntu 14.04. The u-boot files have been compiled from sources at https://github.com/hardkernel/u-boot.git
