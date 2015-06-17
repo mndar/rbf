@@ -1,33 +1,36 @@
 RootFS Build Factory
+====================
 Being developed for Google Summer Of Code 2015
-Organization: CentOS
-Written By: Mandar Joshi [emailmandar at gmail.com]
-Mentor: Ian McLeod [imcleod at redhat.com]
+----------------------------------------------
+*Organization: CentOS*
+*Written By: Mandar Joshi [emailmandar at gmail.com]*
+*Mentor: Ian McLeod [imcleod at redhat.com]*
 
 This project is still in the development stage.
 I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
 
-Tested Emulators
-1. Qemu
+**Tested Emulators**
+- Qemu
 
-Tested Boards:
-1. Cubietruck
-2. Odroid C1
-3. Raspberry Pi 2
+**Tested Boards**
+- Cubietruck
+- Odroid C1
+- Raspberry Pi 2
 
-Untested Boards:
-1. Banana Pi
-2. Cubieboard
-3. Cubieboard 2
-4. Wandboard{solo,dual,quad}
-5. Pandaboard
-6. CompuLab TrimSlice
-7. Beaglebone
+**Untested Boards**
+- Banana Pi
+- Cubieboard
+- Cubieboard 2
+- Wandboard{solo,dual,quad}
+- Pandaboard
+- CompuLab TrimSlice
+- Beaglebone
 
 
 If you have any of the untested boards, please test the RootFS Build Factory and let us know the results. You can email me [emailmandar at gmail.com]
 
-Usage of rbf.py:
+**Usage of rbf.py:**
+
 Note: One of the initial checks rbf.py makes is if you have the required programs to generate images. My test setup is Fedora 21 ARM on Cubietruck
 
 1.  Edit template/cubietruck.xml and set image path in the image tag
@@ -60,9 +63,9 @@ Note: One of the initial checks rbf.py makes is if you have the required program
 10. You can experiment with different templates. You can use custom built kernels too. See templates/cubietruck_centos.xml
     The group and package tags in the packages element take comma separated package names as well.
 
-Known Issues:
+** Known Issues: **
 
-1.  While installing @core in CentOS, sometimes yum gives following messages for these two packages. However the image generated is bootable.
+- While installing @core in CentOS, sometimes yum gives following messages for these two packages. However the image generated is bootable.
     Note: rbf.py just uses yum --installroot to install packages.
     
     Installing :filesystem-3.2-18.el7.armv7hl
@@ -73,48 +76,47 @@ Known Issues:
     error: unpacking of archive failed on file /usr/share/locale/be/LC_MESSAGES/libc.mo;00000e3c: cpio: open
     error: glibc-common-2.17-78.el7.armv7hl: install failed
     
-2.  This happens with the Cubietruck at times. It has happened to me twice after plugging in the HDMI cable.
+- This happens with the Cubietruck at times. It has happened to me twice after plugging in the HDMI cable.
     It boots from NAND flash instead of the microsd card. Just rebooting by pressing the button on the side fixes the problem for me.
     
-3.  DBus, NetworkManager don't start on the Raspberry Pi 2 and ODroid C1. Have to run dhclient manually.
+- DBus, NetworkManager don't start on the Raspberry Pi 2 and ODroid C1. Have to run dhclient manually.
 
 
-Usage of scripts in commonscripts:
+** Usage of scripts in commonscripts: **
 
-1.  expandimage.sh $FILE $EXPANDBY
+- expandimage.sh $FILE $EXPANDBY
     Expands $FILE by $EXPAND. Uses fallocate to expand the provided file
     Eg. commonscripts/expandimage.sh disk.img 4096M
 
-2.  loopdevcreate.sh $FILE $LOOPDEVICE
+- loopdevcreate.sh $FILE $LOOPDEVICE
     Creates a loop back device for provide partition. Can be use to create /dev/loop* for partition from raw disk image.
     Eg. commonscripts/loopdevcreate.sh disk.img /dev/loop0
     To Detach, use losetup -d
     Eg. losetup -d /dev/loop0
     
-3.  mountpart.sh $FILE $PARTITION $MOUNTPOINT
+- mountpart.sh $FILE $PARTITION $MOUNTPOINT
     Mounts specified partition from disk image to mount point.
     Eg. commonscripts/mountpart.sh disk.img 1 /media/pendrive/
     
-4.  writeimage.sh $FILE $DEVICE
+- writeimage.sh $FILE $DEVICE
     Informs user which device will be written to (displays vendor and model) before executing the dd command
     Eg. commonscripts/writeimage.sh centos.img /dev/sdd
 
-Usage of yumplugins/extlinuxconf.py:
+** Usage of yumplugins/extlinuxconf.py: **
 
-This is part of Target 6
 This plugin appends entries to /boot/extlinux/extlinux.conf everytime kernel-core is installed or updated.
 Thus making your new kernel bootable.
 
-1.  Copy yumplugins/extlinuxconf.py to /usr/lib/yum-plugins/
-    and  yumplugins/extlinuxconf.conf to /etc/yum/pluginconf.d/
-    cp yumplugins/extlinuxconf.py /usr/lib/yum-plugins/
-    cp yumplugins/extlinuxconf.conf /etc/yum/pluginconf.d/
+- Copy yumplugins/extlinuxconf.py to /usr/lib/yum-plugins/
+  and  yumplugins/extlinuxconf.conf to /etc/yum/pluginconf.d/
+  cp yumplugins/extlinuxconf.py /usr/lib/yum-plugins/
+  cp yumplugins/extlinuxconf.conf /etc/yum/pluginconf.d/
     
 
-Note:
-1.  The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
-2.  files/cubietruck/u-boot-sunxi-with-spl.bin has been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
-3.  The kernel files/odroidc1 have been taken from Ubuntu 14.04. The u-boot files have been compiled from sources at https://github.com/hardkernel/u-boot.git
-4.  The rpms directory has RPMs generated from sources available here http://pythondialog.sourceforge.net/
-5.  files/{bananapi,cubieboard,cubieboard2,beaglebone,pandaboard} have been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
-6.  files/wandboard* have been taken from http://wiki.wandboard.org/index.php/Sdcard-images
+** Note: **
+- The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
+- files/cubietruck/u-boot-sunxi-with-spl.bin has been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
+- The kernel files/odroidc1 have been taken from Ubuntu 14.04. The u-boot files have been compiled from sources at https://github.com/hardkernel/u-boot.git
+- The rpms directory has RPMs generated from sources available here http://pythondialog.sourceforge.net/
+- files/{bananapi,cubieboard,cubieboard2,beaglebone,pandaboard} have been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
+- files/wandboard* have been taken from http://wiki.wandboard.org/index.php/Sdcard-images
