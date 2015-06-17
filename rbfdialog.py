@@ -5,7 +5,6 @@ import sys
 from dialog import Dialog
 from rbfutils import RbfUtils
 from xml.dom.minidom import parse, Document
-#import xml.dom.minidom
 
 class BoardTemplateCreator():
     SIZE, PTYPE, FS, MOUNTPOINT = range (0,4)
@@ -51,6 +50,8 @@ class BoardTemplateCreator():
         self.networkConf = []
         self.homePath = os.environ['HOME']
         self.lastKnownPath = self.homePath
+        self.generatedXmlPath = ""
+        
     def showBoards(self):
         """Shows a radiolist of supported boards"""
         knownBoards = os.listdir(BoardTemplateCreator.BOARDS_DIR)
@@ -486,6 +487,7 @@ class BoardTemplateCreator():
             self.boardDom = parse(self.xmlTemplate)
         except:
             self.dialogInstance.msgbox("Error Parsing XML Template File")
+            self.xmlTemplate="none"
             return
         
         #try:    
@@ -833,10 +835,29 @@ class BoardTemplateCreator():
         if code == Dialog.OK:
             (code, filename) = self.dialogInstance.inputbox("XML Template Filename")
             if code == Dialog.OK:
-                fileWriter = open(dirpath+os.sep+filename,"w")
-                fileWriter.write(doc.toprettyxml())
-                fileWriter.close()
-                self.dialogInstance.msgbox("Saved Template to " + dirpath+os.sep+filename, width=80, title="Save Template")
+                try:
+                    self.generatedXmlPath = dirpath + os.sep + filename
+                    fileWriter = open(self.generatedXmlPath,"w")
+                    fileWriter.write(doc.toprettyxml())
+                    fileWriter.close()
+                    self.dialogInstance.msgbox("Saved Template to " + self.generatedXmlPath, width=80, title="Save Template")
+                except:
+                    self.generatedXmlPath = ""
+                    self.dialogInstance.msgbox("Error Saving Template",title="Error")
+   
+    def generateImage(self):
+        if self.getFilename(self.generatedXmlPath) == "":
+            self.dialogInstance.msgbox("No XML Generated Yet. Please select 'Save Template' first")
+            return
+        if not os.path.exists(self.generatedXmlPath):
+            self.dialogInstance.msgbox(self.generatedXmlPath + "does not exist")
+            return
+        code = self.dialogInstance.msgbox("To Generate Image " + self.imagePath + " using " + self.generatedXmlPath +" Please run\n\n./rbf.py build " + self.generatedXmlPath, width=80, title="Generate Command")
+            
+    def getFilename(self,filepath):
+        if not "/" in filepath:
+            return filepath
+        return filepath[filepath.rfind("/")+1:]
     
     def mainMenu(self):
         """Displays Main RootFS Build Factory Menu"""
@@ -852,7 +873,8 @@ class BoardTemplateCreator():
                      ("Packages", "Packages to Install"),
                      ("Misc", "Misc Settings"),
                      ("System Config", "System Settings"),
-                     ("Save Template", "Save XML Template"),
+                     ("Save Template", "Filename: " + self.getFilename(self.generatedXmlPath)),
+                     ("Generate Image", "Using Template: " + self.getFilename(self.generatedXmlPath)),
                      ("Exit", "Exit Board Template Writer")])
             
             if code in (Dialog.CANCEL, Dialog.ESC) or tag == "Exit":
@@ -879,10 +901,16 @@ class BoardTemplateCreator():
                 self.showSysConfig()
             elif tag == "Save Template":
                 self.writeTemplate();
+            elif tag == "Generate Image":
+                self.generateImage();
 
                 
 
 if __name__ == "__main__":
+    if os.getuid() != 0:
+        print("You need to be root to use RootFS Build Factory")
+        sys.exit(1)
+        
     d = BoardTemplateCreator()
     d.mainMenu()
 
