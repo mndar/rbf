@@ -76,6 +76,9 @@ Usage of scripts in commonscripts:
     Mounts specified partition from disk image to mount point.
     Eg. commonscripts/mountpart.sh disk.img 1 /media/pendrive/
     
+4.  writeimage.sh $FILE $DEVICE
+    Informs user which device will be written to (displays vendor and model) before executing the dd command
+    Eg. commonscripts/writeimage.sh centos.img /dev/sdd
 
 Usage of yumplugins/extlinuxconf.py:
 
@@ -94,3 +97,5 @@ Note:
 2.  files/cubietruck/u-boot-sunxi-with-spl.bin has been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
 3.  The kernel files/odroidc1 have been taken from Ubuntu 14.04. The u-boot files have been compiled from sources at https://github.com/hardkernel/u-boot.git
 4.  The rpms directory has RPMs generated from sources available here http://pythondialog.sourceforge.net/
+5.  files/{bananapi,cubieboard,cubieboard2,beaglebone,pandaboard} have been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
+6.  files/wandboard* have been taken from http://wiki.wandboard.org/index.php/Sdcard-images
