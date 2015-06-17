@@ -83,6 +83,7 @@ Note: One of the initial checks rbf.py makes is if you have the required program
     
 - DBus, NetworkManager don't start on the Raspberry Pi 2 and ODroid C1. Have to run dhclient manually.
   To fix this you need to copy dbus.service and dbus.socket from /lib/systemd/system/ to /usr/lib/systemd/system and create a symlink for dbus.socket in dbus.target.wants
+  
         cd /usr/lib/systemd/system
         cp /lib/systemd/system/dbus.s* .
         cd dbus.target.wants/
@@ -116,6 +117,7 @@ Thus making your new kernel bootable.
 
 - Copy yumplugins/extlinuxconf.py to /usr/lib/yum-plugins/
   and  yumplugins/extlinuxconf.conf to /etc/yum/pluginconf.d/
+  
         cp yumplugins/extlinuxconf.py /usr/lib/yum-plugins/
         cp yumplugins/extlinuxconf.conf /etc/yum/pluginconf.d/
     
