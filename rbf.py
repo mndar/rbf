@@ -85,7 +85,7 @@ class BoardTemplateParser():
     """
     INDEX, SIZE, BEGIN, PTYPE, FS, MOUNTPOINT, UUID = range (0,7)
     INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR, NO_ROOT_FOUND = range(100,121)    
-    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR = range (200,223)
+    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR = range (200,224)
     RbfScriptErrors = { LOOP_DEVICE_EXISTS: "LOOP_DEVICE_EXISTS: Specified Loop Device Already Exists. Check losetup -l",
                         FALLOCATE_ERROR : "FALLOCATE_ERROR: Error While Creating Image File",
                         PARTED_ERROR: "PARTED_ERROR: Could Not Partition Image",
@@ -108,7 +108,8 @@ class BoardTemplateParser():
                         LOOP_DEVICE_DELETE_ERROR: "LOOP_DEVICE_CREATE_ERROR: Could Not Delete Loop Device. Device Might Be Busy. Check \"losetup -l\"",
                         LOSETUP_ERROR: "LOSETUP_ERROR: Something went wrong while setting up the loopback device",
                         PARTPROBE_ERROR: "PARTPROBE_ERROR: Probing Parititons Failed",
-                        COULD_NOT_CREATE_WORKDIR: "COULD_NOT_CREATE_WORKDIR: Could not create work directory"  }
+                        COULD_NOT_CREATE_WORKDIR: "COULD_NOT_CREATE_WORKDIR: Could not create work directory",
+                        KERNEL_PACKAGE_INSTALL_ERROR: "KERNEL_PACKAGE_INSTALL_ERROR: Error installing Kernel Packages"  }
    
     def __init__(self, action, xmlTemplate):
         """Constructor for BoardTemplateParser"""
@@ -602,9 +603,12 @@ class BoardTemplateParser():
         elif self.kernelType == "stock":
             for k in kernelDom:                
                 logging.info("Using Stock Kernel")
-                self.packages.append('kernel')
-                #Required for generation of generic initramfs
-                self.packages.append('dracut-config-generic')
+                repoEnableString = "--disablerepo=* --enablerepo="
+                for r in self.repoNames:
+                    repoEnableString = repoEnableString + r + ","
+                self.rbfScript.write("echo [INFO ]  $0 Installing Kernel Packages. Please Wait\n")
+                self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " install kernel dracut-config-generic 2>> rbf.log\n")
+                self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.KERNEL_PACKAGE_INSTALL_ERROR))
         elif self.kernelType == "none":
             logging.info("Not Installing Any Kernel")
         
@@ -861,10 +865,10 @@ if ( __name__ == "__main__"):
     boardParser.createFilesystems()
     boardParser.mountPartitions()
     boardParser.writeRepos()
-    boardParser.installKernel()
     boardParser.installPackages()
     boardParser.makeBootable()
     boardParser.configureNetwork()
+    boardParser.installKernel()
     boardParser.finalActions()    
     
     if action == "build":
