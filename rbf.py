@@ -778,13 +778,18 @@ class BoardTemplateParser():
                 config = i.getAttribute("config")
                 logging.info("Found Network Interface: " + name + " " + config)
                 if config == "static":
-                    self.makeDirTree(networkConfigPath)
-                    ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
-                    subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
-                    gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
-                    nameserver = i.getElementsByTagName("nameserver")[0].childNodes[0].data
-                    logging.info("IP Addres: " + ipaddress)
+                    try: 
+                        ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
+                        subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
+                        gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
+                        nameserver = i.getElementsByTagName("nameserver")[0].childNodes[0].data
+                    except:
+                        logging.error("Error reading static interface info. Ignoring " + name)
+                        continue
+                        
+                    logging.info("IP Addres: " + name + " " + ipaddress)
                 
+                    self.makeDirTree(networkConfigPath)
                     ifcfg = open (networkConfigPath+"/ifcfg-"+name,"w")
                     ifcfg.write("TYPE=\"Ethernet\"\nBOOTPROTO=\"none\"\nNM_CONTROLLED=\"yes\"\nDEFROUTE=\"yes\"\nNAME=\""+name+"\"\nUUID=\""+str(uuid.uuid4())+"\"\nONBOOT=\"yes\"\nIPADDR0=\""+ipaddress+"\"\nNETMASK0=\""+subnetmask+"\"\nGATEWAY0=\""+gateway+"\"\nDNS1=\""+nameserver+"\"\n")                  
                     ifcfg.close()
