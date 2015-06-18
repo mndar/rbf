@@ -751,6 +751,15 @@ class BoardTemplateParser():
             fstab.write(partitionPath + " " + mountpoint + " " + fs + " noatime 0 0\n")
         fstab.close()
     
+    def makeDirTree(self, path):
+        try:
+            os.makedirs(path)
+        except OSError as osError:
+            if osError.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+            
     def configureNetwork(self):
         """Configure Network"""
         logging.info("Reading Network Config")
@@ -761,13 +770,6 @@ class BoardTemplateParser():
             return
        
         networkConfigPath = self.etcOverlay+"/sysconfig/network-scripts"
-        try:
-            os.makedirs(networkConfigPath)
-        except OSError as osError:
-            if osError.errno == errno.EEXIST and os.path.isdir(networkConfigPath):
-                pass
-            else:
-                raise
                 
         for n in networkDom:
             interface = n.getElementsByTagName("interface")
@@ -776,6 +778,7 @@ class BoardTemplateParser():
                 config = i.getAttribute("config")
                 logging.info("Found Network Interface: " + name + " " + config)
                 if config == "static":
+                    self.makeDirTree(networkConfigPath)
                     ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
                     subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
                     gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
