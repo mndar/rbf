@@ -1,193 +1,26 @@
-[ERROR]  This script is not meant to be run on x86_64
 [INFO ]  All Commands Found. Continuing
 [INFO ]  Arguments Correct. Continuing
-[INFO ]  Xml Template: templates/qemu_local.xml
-[INFO ]  Parsing: templates/qemu_local.xml
-[INFO ]  Successfully Parsed Board Template For: qemu
+[INFO ]  Xml Template: templates/cubietruck.xml
+[INFO ]  Parsing: templates/cubietruck.xml
+[INFO ]  Successfully Parsed Board Template For: cubietruck
 [INFO ]  Creating Image File
-[INFO ]  Creating Image: 4G raw qemu-centos-image-local.img
+[INFO ]  Creating Image: 4G raw cubietruck-centos-image.img
 [INFO ]  Creating Partitions
 [INFO ]  Verifying that Primary & Extended partition sizes doesn't exceed image size
 [INFO ]  Image Size: 4096M Parititon Size Sum: 3572M
 [INFO ]  Verifying that Logical partition sizes don't exceed Extended partition image size
-[INFO ]  Creating Partition 1 500M primary ext3 /boot adf16082-8a76-4420-84c2-c04a5668c686
-[INFO ]  Creating Partition 2 1024M primary swap swap 88dc06ad-5db6-4bd3-af59-7cd32f59f2f6
-[INFO ]  Creating Partition 3 2048M primary ext4 / 1034c496-82cf-4c8f-9f71-ac8519121cdc
+[INFO ]  Creating Partition 1 500M primary ext3 /boot 42892d65-37d6-4ba1-8b65-81bbbc73a371
+[INFO ]  Creating Partition 2 1024M primary swap swap cf69ac77-8a9e-49cb-9bb4-cc890f51abbf
+[INFO ]  Creating Partition 3 2048M primary ext4 / 47667d48-a4e0-4d98-9c40-c99b56657d0b
 [INFO ]  Mounting Partitions
 [INFO ]  Mounting Parititon 3 on /tmp/temp/
 [INFO ]  Mounting Parititon 1 on /tmp/temp/boot
-[INFO ]  Found Repo: c7buildroot ftp://192.168.1.3/c7buildroot/
-[INFO ]  Found Repo: c7pass1 ftp://192.168.1.3/c7pass1/
-[INFO ]  Found Repo: comps ftp://192.168.1.3/comps/
+[INFO ]  Found Repo: c7buildroot http://armv7.dev.centos.org/repodir/c7-buildroot/
+[INFO ]  Found Repo: c7pass1 http://armv7.dev.centos.org/repodir/c7-pass-1/
+[INFO ]  Found Repo: comps http://armv7.dev.centos.org/repodir/comps/
 [INFO ]  Installing Kernel
 [INFO ]  Kernel Type: stock
 [INFO ]  Using Stock Kernel
 [INFO ]  Installing Package Groups: @core
 [INFO ]  Installing Packages: net-tools dracut-config-generic kernel
-[INFO ]  Reading Network Config
-[INFO ]  Found Network Interface: eth0 dhcp
-[INFO ]  Copying Etc Overlay: ./etc
-[INFO ]  Setting empty root pass
-[INFO ]  Setting SELinux status to disabled
-[INFO ]  Board Script: ./boards.d/qemu.sh /dev/loop0 none none /tmp/temp none 3 1034c496-82cf-4c8f-9f71-ac8519121cdc
-
-[INFO ]  Finalize Script: ./boards.d/finalize.sh
-[INFO ]  Running RootFS Build Factory script
-losetup: /dev/loop0: detach failed: No such device or address
-mke2fs 1.42.12 (29-Aug-2014)
-Discarding device blocks:   1024/512000             done                            
-Creating filesystem with 512000 1k blocks and 128016 inodes
-Filesystem UUID: adf16082-8a76-4420-84c2-c04a5668c686
-Superblock backups stored on blocks: 
-	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
-
-Allocating group tables:  0/63     done                            
-Writing inode tables:  0/63     done                            
-Creating journal (8192 blocks): done
-Writing superblocks and filesystem accounting information:  0/63     done
-
-Setting up swapspace version 1, size = 1048572 KiB
-no label, UUID=88dc06ad-5db6-4bd3-af59-7cd32f59f2f6
-mke2fs 1.42.12 (29-Aug-2014)
-Discarding device blocks:   4096/524288             done                            
-Creating filesystem with 524288 4k blocks and 131072 inodes
-Filesystem UUID: 1034c496-82cf-4c8f-9f71-ac8519121cdc
-Superblock backups stored on blocks: 
-	32768, 98304, 163840, 229376, 294912
-
-Allocating group tables:  0/16     done                            
-Writing inode tables:  0/16     done                            
-Creating journal (16384 blocks): done
-Writing superblocks and filesystem accounting information:  0/16     done
-
-There is no installed groups file.
-Maybe run: yum groups mark convert (see man yum)
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-
-
- One of the configured repositories failed (c7buildroot),
- and yum doesn't have enough cached data to continue. At this point the only
- safe thing yum can do is fail. There are a few ways to work "fix" this:
-
-     1. Contact the upstream for the repository and get them to fix the problem.
-
-     2. Reconfigure the baseurl/etc. for the repository, to point to a working
-        upstream. This is most often useful if you are using a newer
-        distribution release than is supported by the repository (and the
-        packages for the previous distribution release still work).
-
-     3. Disable the repository, so yum won't use it by default. Yum will then
-        just ignore the repository until you permanently enable it again or use
-        --enablerepo for temporary usage:
-
-            yum-config-manager --disable c7buildroot
-
-     4. Configure the failing repository to be skipped, if it is unavailable.
-        Note that yum will try to contact the repo. when it runs most commands,
-        so will have to try and fail each time (and thus. yum will be be much
-        slower). If it is a very temporary problem though, this is often a nice
-        compromise:
-
-            yum-config-manager --save --setopt=c7buildroot.skip_if_unavailable=true
-
-failure: repodata/repomd.xml from c7buildroot: [Errno 256] No more mirrors to try.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-Trying other mirror.
-
-
- One of the configured repositories failed (c7buildroot),
- and yum doesn't have enough cached data to continue. At this point the only
- safe thing yum can do is fail. There are a few ways to work "fix" this:
-
-     1. Contact the upstream for the repository and get them to fix the problem.
-
-     2. Reconfigure the baseurl/etc. for the repository, to point to a working
-        upstream. This is most often useful if you are using a newer
-        distribution release than is supported by the repository (and the
-        packages for the previous distribution release still work).
-
-     3. Disable the repository, so yum won't use it by default. Yum will then
-        just ignore the repository until you permanently enable it again or use
-        --enablerepo for temporary usage:
-
-            yum-config-manager --disable c7buildroot
-
-     4. Configure the failing repository to be skipped, if it is unavailable.
-        Note that yum will try to contact the repo. when it runs most commands,
-        so will have to try and fail each time (and thus. yum will be be much
-        slower). If it is a very temporary problem though, this is often a nice
-        compromise:
-
-            yum-config-manager --save --setopt=c7buildroot.skip_if_unavailable=true
-
-failure: repodata/repomd.xml from c7buildroot: [Errno 256] No more mirrors to try.
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-ftp://192.168.1.3/c7buildroot/repodata/repomd.xml: [Errno 14] curl#7 - "Failed to connect to 192.168.1.3 port 21: Connection refused"
-‘./etc/fstab’ -> ‘/tmp/temp/etc/fstab’
-‘./etc/sysconfig’ -> ‘/tmp/temp/etc/sysconfig’
-‘./etc/sysconfig/network-scripts’ -> ‘/tmp/temp/etc/sysconfig/network-scripts’
-‘./etc/sysconfig/network-scripts/ifcfg-eth0’ -> ‘/tmp/temp/etc/sysconfig/network-scripts/ifcfg-eth0’
-‘./etc/resolv.conf’ -> ‘/tmp/temp/etc/resolv.conf’
-‘./etc/hostname’ -> ‘/tmp/temp/etc/hostname’
-sed: can't read /tmp/temp/etc/passwd: No such file or directory
-sed: can't read /tmp/temp/etc/selinux/config: No such file or directory
-[INFO ]  Successfully Executed rbf.sh
-[INFO ]  Creating Initramfs
-[INFO ]  No Kernels Found
-[INFO ]  Clean Up
-[INFO ]  If you need any help, please provide rbf.log rbf.sh initramfs.sh cleanup.sh templates/qemu_local.xml and the above output.
+[ERROR]  Need Etc Overlay To Continue

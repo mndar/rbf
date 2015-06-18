@@ -858,7 +858,18 @@ class BoardTemplateCreator():
         return doc.toprettyxml()
              
     def writeTemplate(self):
-        
+        if self.boardName == "":
+            self.dialogInstance.msgbox("You haven't selected any board.",title="Board Error")
+            return
+        if not self.imageData:
+            self.dialogInstance.msgbox("You don't have any paritions defined", title="Partition Error")
+            return
+        if not self.repoData:
+            self.dialogInstance.msgbox("You don't have any repos defined", title="Repo Error")
+            return
+        if not self.networkData:
+            self.dialogInstance.msgbox("You don't have any network interfaces defined.\nIgnoring", title="Network Interface Error")
+            
         xmlData = self.generateTemplate()
         
         (code , dirpath) = self.dialogInstance.dselect(self.lastKnownPath,10,50,title="Select Directory to Save Template")
