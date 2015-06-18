@@ -653,7 +653,7 @@ class BoardTemplateParser():
         logging.info("Copying Etc Overlay: " + self.etcOverlay)
         #show files being copied from etcOverlay. This is important because we are not automatically clearing the etc overlay after each RootFS Build Factory Run
         self.showFiles(self.etcOverlay,0)
-        self.rbfScript.write("cp -rpv "+ self.etcOverlay + " " + self.workDir+" &>> rbf.log \n")
+        self.rbfScript.write("cp -rpv "+ self.etcOverlay + "/* " + self.workDir+"/etc/ &>> rbf.log \n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.ETC_OVERLAY_ERROR))
         
         logging.info("Setting empty root pass")
