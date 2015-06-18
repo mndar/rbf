@@ -54,7 +54,7 @@ class BoardTemplateCreator():
         
     def showBoards(self):
         """Shows a radiolist of supported boards"""
-        knownBoards = os.listdir(BoardTemplateCreator.BOARDS_DIR)
+        knownBoards = sorted(os.listdir(BoardTemplateCreator.BOARDS_DIR))
         boardChoices=[]        
         for board in knownBoards:
             if board == "finalize.sh":
