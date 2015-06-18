@@ -631,7 +631,19 @@ class BoardTemplateParser():
             for kernelVer in self.stockKernels:
                 self.initramfsScript.write("echo [INFO ]  $0 Creating Initramfs\n")                
                 self.initramfsScript.write("chroot "+ self.workDir + " /usr/bin/dracut --no-compress -f /boot/initramfs-" + kernelVer + ".img " + kernelVer + " &>> rbf.log\n")
-    
+   
+    def showFiles(self,directory,depth):
+        """Walks a directory tree and shows files and directories"""
+        contents = os.listdir(directory)
+        for c in contents:
+            contentDisplayString = "         "
+            for i in range(0,depth):
+                contentDisplayString = contentDisplayString + "\t"
+            contentDisplayString = contentDisplayString + "-" + c
+            logging.info(contentDisplayString)
+            if os.path.isdir(directory+os.sep+c):
+                self.showFiles(directory+os.sep+c,depth+1)
+            
     def finalActions(self):
         """Sets Hostname, Root Pass, SELinux Status & runs Board Script & Finalize Script"""
         hostnameConfig = open(self.etcOverlay+"/hostname","w")
@@ -639,6 +651,8 @@ class BoardTemplateParser():
         hostnameConfig.close()
         
         logging.info("Copying Etc Overlay: " + self.etcOverlay)
+        #show files being copied from etcOverlay. This is important because we are not automatically clearing the etc overlay after each RootFS Build Factory Run
+        self.showFiles(self.etcOverlay,0)
         self.rbfScript.write("cp -rpv "+ self.etcOverlay + " " + self.workDir+" &>> rbf.log \n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.ETC_OVERLAY_ERROR))
         
