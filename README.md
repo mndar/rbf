@@ -19,9 +19,9 @@ I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
 - Cubietruck
 - Odroid C1
 - Raspberry Pi 2
+- Banana Pi (Tested By Nicolas [nicolas at shivaserv.fr])
 
 **Untested Boards**
-- Banana Pi
 - Cubieboard
 - Cubieboard 2
 - Wandboard{solo,dual,quad}
