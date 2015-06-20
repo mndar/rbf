@@ -476,8 +476,10 @@ class BoardTemplateParser():
                     self.rbfScript.write("mount " + self.loopDevice + "p" + index +" " +self.workDir + mountpoint + "\n")
                     self.rbfScript.write(self.getShellExitString(BoardTemplateParser.MOUNTING_ERROR))
         
-        self.rbfScript.write("mkdir " + self.workDir + "/proc " + self.workDir + "/sys\n")
+        self.rbfScript.write("mkdir " + self.workDir + "/proc " + self.workDir + "/sys " + self.workDir + "/dev\n")
         self.rbfScript.write("mount -t proc proc " + self.workDir + "/proc\n")
+        self.rbfScript.write("mount --rbind /dev " + self.workDir + "/dev\n")
+        self.rbfScript.write("mount --make-rslave " + self.workDir + "/dev\n")
         
     def writeRepos(self):
         """Writes Repos to /etc/yum.repos.d"""
@@ -812,6 +814,9 @@ class BoardTemplateParser():
                 self.cleanupScript.write("umount " + self.workDir + self.imageData[i][BoardTemplateParser.MOUNTPOINT]+"\n")
 
         self.cleanupScript.write("umount " + self.workDir + "/proc\n")
+        self.cleanupScript.write("umount -l " + self.workDir + "/dev/shm\n")
+        self.cleanupScript.write("umount -l " + self.workDir + "/dev/pts\n")
+        self.cleanupScript.write("umount -l " + self.workDir + "/dev/\n")
         self.cleanupScript.write("umount " + self.workDir + "\n")
         self.cleanupScript.write(self.delDeviceIfExists(self.loopDevice))
         self.cleanupScript.write("exit 0\n")
