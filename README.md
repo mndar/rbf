@@ -43,9 +43,11 @@ If you have any of the untested boards, please test the RootFS Build Factory and
   You can even specify a local repository if you have one. The provided info is used as baseurl.
 
 - To just parse the XML Template
+
         ./rbf.py parse templates/cubietruck.xml
 
 - To Also build image.
+
         ./rbf.py build templates/cubietruck.xml
 
 - Follow the output of the script. 
@@ -53,6 +55,7 @@ If you have any of the untested boards, please test the RootFS Build Factory and
   The script uses the yum command to install packages. The yum command asks you whether to continue with y/d/N after resolving dependencies.
 
 - Once the image is generated write it your microsd card using dd or dcfldd
+
         dcfldd if=cubietruck-centos-image.img of=/dev/sdb 
 
 - Just login as root. No password is required. 
@@ -68,6 +71,7 @@ If you have any of the untested boards, please test the RootFS Build Factory and
 
 **Usage of rbfdialog.py**
 - It uses the python2-pythondialog-3.3 library. You can get the rpm from the rpms directory or install it from source from http://pythondialog.sourceforge.net/. As dependency it needs *dialog* installed. So do this first
+
         yum install dialog
         
 - The main menu looks like this
@@ -80,6 +84,7 @@ If you have any of the untested boards, please test the RootFS Build Factory and
 - The do *Save Template* to save the XML template to a location of your choice.
 
 - Then run
+
         ./rbf.py build /path/to/template.xml
 
 - The dialog based UI uses *space* completion instead of *tab* completion. It takes some time to get used to.
