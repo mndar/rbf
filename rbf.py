@@ -177,7 +177,7 @@ class BoardTemplateParser():
         self.rbfScript.write(self.delDeviceIfExists(self.loopDevice))
         logging.info("Creating Image File")
         imageDom = self.boardDom.getElementsByTagName("image")[0]
-        if imageDom.hasAttribute("size") and imageDom.hasAttribute("size") and imageDom.hasAttribute("size"):
+        if imageDom.hasAttribute("size") and imageDom.hasAttribute("type") and imageDom.hasAttribute("path"):
             self.imageSize = imageDom.getAttribute("size")
             imageType = imageDom.getAttribute("type")
             self.imagePath = imageDom.getAttribute("path")
