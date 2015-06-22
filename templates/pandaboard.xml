@@ -2,7 +2,7 @@
     <board>pandaboard</board>
     <image size="3G" type="raw" path="pandaboard-image-local.img"></image>
     <partitions>
-        <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
         <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
     </partitions>
     
@@ -41,7 +41,7 @@
         <repo name="comps" path="http://armv7.dev.centos.org/repodir/comps/"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
-    <extlinuxconf>false</extlinuxconf>
+    <extlinuxconf>true</extlinuxconf>
     
  </template>
  
