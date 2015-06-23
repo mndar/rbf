@@ -35,6 +35,7 @@ If you have any of the untested boards, please test the RootFS Build Factory and
 - You need to be root to use RootFS Build Factory
 - One of the initial checks rbf.py makes is if you have the required programs to generate images. My test setup is Fedora 21 ARM and CentOS 7 ARM on Cubietruck.
 - You need to install *dosfstools* if you want to create vfat partitions.
+- the etc overlay directory (default ./etc) is not cleared before every run. It allows you to copy any config files to the new installroot. So files present in the etc overlay directory will be copied to the new installroot's /etc.
 
 **Usage of rbf.py:**
 - Edit template/cubietruck.xml and set image path in the image tag
