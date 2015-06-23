@@ -1,0 +1,3 @@
+#!/bin/sh
+/sbin/ifconfig $1 0.0.0.0 promisc up
+/usr/sbin/brctl addif br0 $1
