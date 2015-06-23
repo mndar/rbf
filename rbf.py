@@ -858,7 +858,7 @@ if ( __name__ == "__main__"):
         
     
         
-    if checkCommandExistsAccess(['echo', 'fallocate','parted','read','losetup','mount','mkdir','rm','cat','cp','rpm','yum','sed','chroot','partprobe']):
+    if checkCommandExistsAccess(['echo', 'dd','parted','read','losetup','mount','mkdir','rm','cat','cp','rpm','yum','sed','chroot','partprobe']):
         logging.info("All Commands Found. Continuing")
     else:
         logging.error("Cannot Continue")
