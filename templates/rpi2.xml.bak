@@ -7,8 +7,7 @@
         <partition size="500M" type="primary" fs="ext4" mountpoint="/var"></partition>
         <partition size="2096M" type="extended" fs="" mountpoint=""></partition>
         <partition size="1200M" type="logical" fs="ext4" mountpoint="/"></partition>         
-        <partition size="196M" type="logical" fs="ext4" mountpoint="/opt"></partition>
-        <partition size="700M" type="logical" fs="ext4" mountpoint="/opt"></partition>
+        <partition size="896M" type="logical" fs="ext4" mountpoint="/opt"></partition>
     </partitions>
     
     <packages>
@@ -35,7 +34,8 @@
                 <ipaddress>192.168.1.151</ipaddress>
                 <subnetmask>255.255.255.0</subnetmask>
                 <gateway>192.168.1.1</gateway>
-                <nameserver>8.8.8.8</nameserver>
+                <dns1>8.8.8.8</dns1>
+                <dns2>8.8.4.4</dns2>
             </interface>
         </network>        
     </config>

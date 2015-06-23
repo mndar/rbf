@@ -594,16 +594,21 @@ class BoardTemplateCreator():
                         ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
                         subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
                         gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
-                        nameserver = i.getElementsByTagName("nameserver")[0].childNodes[0].data
+                        dns1 = i.getElementsByTagName("dns1")[0].childNodes[0].data
+                        try:
+                            dns2 = i.getElementsByTagName("dns2")[0].childNodes[0].data
+                        except:
+                            dns2 = ""
                     except:
                         self.dialogInstance.msgbox("Invalid static interface config.\nNot adding interface " + name)
-                        break
+                        continue
                 else:
                     ipaddress = ""
                     subnetmask = ""
                     gateway = ""
-                    nameserver = ""
-                ndata = [name, config, ipaddress, subnetmask, gateway, nameserver, "" ]
+                    dns1 = ""
+                    dns2 = ""
+                ndata = [name, config, ipaddress, subnetmask, gateway, dns1, dns2 ]
                 self.networkData.append(ndata)
                 self.totalNetworkInterfaces = self.totalNetworkInterfaces + 1
         #except:                        
@@ -838,9 +843,11 @@ class BoardTemplateCreator():
                 subnetmask.appendChild(doc.createTextNode(self.networkData[i][BoardTemplateCreator.IF_NETMASK]))
                 gateway = doc.createElement("gateway")
                 gateway.appendChild(doc.createTextNode(self.networkData[i][BoardTemplateCreator.IF_GATEWAY]))
-                nameserver = doc.createElement("nameserver")
-                nameserver.appendChild(doc.createTextNode(self.networkData[i][BoardTemplateCreator.IF_DNS1]))
-                for j in [ipaddress,subnetmask,gateway,nameserver]:
+                dns1 = doc.createElement("dns1")
+                dns1.appendChild(doc.createTextNode(self.networkData[i][BoardTemplateCreator.IF_DNS1]))
+                dns2 = doc.createElement("dns2")
+                dns2.appendChild(doc.createTextNode(self.networkData[i][BoardTemplateCreator.IF_DNS2]))
+                for j in [ipaddress,subnetmask,gateway,dns1,dns2]:
                     interface.appendChild(j)
         
         etcoverlay.appendChild(doc.createTextNode(self.etcOverlay))

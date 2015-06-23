@@ -31,7 +31,7 @@
                 <ipaddress>192.168.1.202</ipaddress>
                 <subnetmask>255.255.255.0</subnetmask>
                 <gateway>192.168.1.1</gateway>
-                <nameserver>8.8.8.8</nameserver>
+                <dns1>8.8.8.8</dns1>
             </interface>
         </network>        
     </config>

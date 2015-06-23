@@ -791,7 +791,11 @@ class BoardTemplateParser():
                         ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
                         subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
                         gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
-                        nameserver = i.getElementsByTagName("nameserver")[0].childNodes[0].data
+                        dns1 = i.getElementsByTagName("dns1")[0].childNodes[0].data
+                        try:
+                            dns2 = i.getElementsByTagName("dns2")[0].childNodes[0].data
+                        except:
+                            dns2 = ""
                     except:
                         logging.error("Error reading static interface info. Ignoring " + name)
                         continue
@@ -800,11 +804,11 @@ class BoardTemplateParser():
                 
                     self.makeDirTree(networkConfigPath)
                     ifcfg = open (networkConfigPath+"/ifcfg-"+name,"w")
-                    ifcfg.write("TYPE=\"Ethernet\"\nBOOTPROTO=\"none\"\nNM_CONTROLLED=\"yes\"\nDEFROUTE=\"yes\"\nNAME=\""+name+"\"\nUUID=\""+str(uuid.uuid4())+"\"\nONBOOT=\"yes\"\nIPADDR0=\""+ipaddress+"\"\nNETMASK0=\""+subnetmask+"\"\nGATEWAY0=\""+gateway+"\"\nDNS1=\""+nameserver+"\"\n")                  
+                    ifcfg.write("TYPE=\"Ethernet\"\nBOOTPROTO=\"none\"\nNM_CONTROLLED=\"yes\"\nDEFROUTE=\"yes\"\nNAME=\""+name+"\"\nUUID=\""+str(uuid.uuid4())+"\"\nONBOOT=\"yes\"\nIPADDR0=\""+ipaddress+"\"\nNETMASK0=\""+subnetmask+"\"\nGATEWAY0=\""+gateway+"\"\nDNS1=\""+dns1+"\"\n")                  
+                    if dns2 != "":
+                        ifcfg.write("DNS2=\""+dns2+"\"\n")
                     ifcfg.close()
-                    ifcfg = open(self.etcOverlay + "/resolv.conf", "w")
-                    ifcfg.write("nameserver " + nameserver+"\n")
-                    ifcfg.close()
+                    
                 
     def cleanUp(self):
         """CleanUp Steps"""

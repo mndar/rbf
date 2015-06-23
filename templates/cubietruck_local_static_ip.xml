@@ -24,16 +24,17 @@
         <selinux>disabled</selinux>
         <network>
             <interface name="eth0" config="static">
-                <!--<ipaddress>192.168.1.155</ipaddress> -->
+                <ipaddress>192.168.1.155</ipaddress>
                 <subnetmask>255.255.255.0</subnetmask>
                 <gateway>192.168.1.1</gateway>
-                <nameserver>8.8.8.8</nameserver>
+                <dns1>8.8.8.8</dns1>
+                <dns2>8.8.4.4</dns2>
             </interface>
             <interface name="eth1" config="static">
-                <ipaddress>10.0.0.2</ipaddress>
+                <!--<ipaddress>10.0.0.2</ipaddress> -->
                 <subnetmask>255.0.0.0</subnetmask>
                 <gateway>10.0.0.1</gateway>
-                <nameserver>8.8.8.8</nameserver>
+                <dns1>8.8.8.8</dns1>
             </interface>
         </network>        
     </config>
