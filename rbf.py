@@ -174,7 +174,7 @@ class BoardTemplateParser():
         
     def createImage(self):
         """Creates Image File"""        
-        self.rbfScript.write("echo [INFO ]   $0 Detacing Loop Device If Busy: " + self.loopDevice+"\n")
+        self.rbfScript.write("echo [INFO ]   $0 Detaching Loopback Device: " + self.loopDevice+"\n")
         self.rbfScript.write(self.delDeviceIfExists(self.loopDevice))
         logging.info("Creating Image File")
         imageDom = self.boardDom.getElementsByTagName("image")[0]
@@ -461,7 +461,7 @@ class BoardTemplateParser():
                     self.rbfScript.write(self.getShellExitString(BoardTemplateParser.MOUNTING_ERROR))
                     for j in range(0, len(self.imageData)):
                         pm = self.imageData[j][BoardTemplateParser.MOUNTPOINT]
-                        if pm != "/" and pm != "swap":                            
+                        if pm not in ("/","swap",""):                            
                             self.rbfScript.write("mkdir -p " + self.workDir + mountpoint + pm + "\n")
                             
                     
@@ -473,7 +473,7 @@ class BoardTemplateParser():
                 begin = self.imageData[i][BoardTemplateParser.BEGIN]
                 fs = self.imageData[i][BoardTemplateParser.FS]
                 ptype = self.imageData[i][BoardTemplateParser.PTYPE]
-                if mountpoint != "/" and mountpoint !="swap":
+                if mountpoint not in ("/","swap",""):
                     logging.info("Mounting Parititon "+ index + " on " + self.workDir + mountpoint)
                     self.rbfScript.write("echo [INFO ]   $0 Mouting Parititon " + index + " on " + mountpoint+"\n")
                     self.rbfScript.write("mount " + self.loopDevice + "p" + index +" " +self.workDir + mountpoint + "\n")
