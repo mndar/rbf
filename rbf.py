@@ -85,9 +85,10 @@ class BoardTemplateParser():
     """
     INDEX, SIZE, BEGIN, PTYPE, FS, MOUNTPOINT, UUID = range (0,7)
     INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR, NO_ROOT_FOUND = range(100,121)    
-    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR = range (200,224)
+    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, DD_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR = range (200,225)
     RbfScriptErrors = { LOOP_DEVICE_EXISTS: "LOOP_DEVICE_EXISTS: Specified Loop Device Already Exists. Check losetup -l",
                         FALLOCATE_ERROR : "FALLOCATE_ERROR: Error While Creating Image File",
+                        DD_ERROR : "DD_ERROR: Error While Creating Image File",
                         PARTED_ERROR: "PARTED_ERROR: Could Not Partition Image",
                         LOOP_DEVICE_CREATE_ERROR: "LOOP_DEVICE_CREATE_ERROR: Could Not Create Loop Device. Device Might Be Busy. Check \"losetup -l\"",
                         PARTITION_DOES_NOT_EXIST: "PARTITION_DOES_NOT_EXIST: Could Not Find Specified Partition",
@@ -198,8 +199,10 @@ class BoardTemplateParser():
             sys.exit(BoardTemplateParser.IMAGE_EXISTS)
         
         self.rbfScript.write("echo [INFO ]    $0 Creating " + self.imagePath + "\n")
-        self.rbfScript.write("fallocate -l " + self.imageSize + " " + self.imagePath + " &>> rbf.log \n")
-        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.FALLOCATE_ERROR))
+        self.rbfScript.write("dd if=/dev/zero of=\"" + self.imagePath + "\" bs=1M count=0 seek="+self.imageSize[0:-1] + " &>> rbf.log \n")
+        self.rbfScript.write(self.getShellExitString(BoardTemplateParser.DD_ERROR))
+        #self.rbfScript.write("fallocate -l " + self.imageSize + " " + self.imagePath + " &>> rbf.log \n")
+        #self.rbfScript.write(self.getShellExitString(BoardTemplateParser.FALLOCATE_ERROR))
     
     def verifyPrimaryPartitionSizes(self,partitionsDom):
         """Checks if Primary & Extended partition size is exceeding total image size"""
