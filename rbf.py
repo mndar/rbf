@@ -290,7 +290,7 @@ class BoardTemplateParser():
             logging.error("Logical Parititon Sizes Exceed Extended Parititon Size")
             sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)
             
-        self.rbfScript.write("losetup " + self.loopDevice + " " + self.imagePath + " &>> rbf.log\n")
+        self.rbfScript.write("losetup " + self.loopDevice + " \"" + self.imagePath + "\" &>> rbf.log\n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.LOSETUP_ERROR))
         
         partedString = "parted " + self.loopDevice + " --align optimal -s mklabel msdos "
