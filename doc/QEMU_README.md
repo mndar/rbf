@@ -21,17 +21,17 @@ Steps
 
         losetup /dev/loop0 qemu-centos-image.img
         partprobe /dev/loop0
-        gparted /dev/loop0 #Right click on the partition an select Resize/Move
+        gparted /dev/loop0 #Right click on the partition and select Resize/Move
         losetup -d /dev/loop0
         
 - Run the following command to launch qemu
 
-        qemu-system-arm -m 1024M -M vexpress-a9 -cpu cortex-a9 -append "console=ttyAMA0,115200n8 rw root=/dev/mmcblk0p3" -no-reboot -nographic -dtb vexpress-v2p-ca9.dtb -kernel vmlinuz-4.0.0-1.el7.armv7hl -initrd initramfs-4.0.0-1.el7.armv7hl.img -sd qemu-centos-image.img
+        qemu-system-arm -m 1024M -M vexpress-a9 -cpu cortex-a9 -append "console=ttyAMA0,115200n8 rw root=/dev/mmcblk0p3" -nographic -dtb vexpress-v2p-ca9.dtb -kernel vmlinuz-4.0.0-1.el7.armv7hl -initrd initramfs-4.0.0-1.el7.armv7hl.img -sd qemu-centos-image.img
   
   
 - To use bridge networking with QEMU. First setup bridge networking on you host. Then use the qemu-ifup script along with the command below
 
-        qemu-system-arm -m 1024M -M vexpress-a9 -cpu cortex-a9 -append "console=ttyAMA0,115200n8 rw root=/dev/mmcblk0p3" -no-reboot -nographic -dtb vexpress-v2p-ca9.dtb -kernel vmlinuz-4.0.0-1.el7.armv7hl -initrd initramfs-4.0.0-1.el7.armv7hl.img -sd qemu-centos-image.img -net nic,vlan=0 -net tap,vlan=0,ifname=tap0,script=./qemu-ifup
+        qemu-system-arm -m 1024M -M vexpress-a9 -cpu cortex-a9 -append "console=ttyAMA0,115200n8 rw root=/dev/mmcblk0p3" -nographic -dtb vexpress-v2p-ca9.dtb -kernel vmlinuz-4.0.0-1.el7.armv7hl -initrd initramfs-4.0.0-1.el7.armv7hl.img -sd qemu-centos-image.img -net nic,vlan=0 -net tap,vlan=0,ifname=tap0,script=./qemu-ifup
         
 - Login as root with no password. 
 
