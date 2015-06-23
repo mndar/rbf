@@ -1,15 +1,15 @@
 <template>    
     <board>qemu</board>
-    <image size="4G" type="raw" path="qemu-centos-image-local.img"></image>
+    <image size="2548M" type="raw" path="qemu-centos-image-local.img"></image>
     <partitions>
         <partition size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
         <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
-        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition size="1G" type="primary" fs="ext4" mountpoint="/"></partition>
     </partitions>
     
     <packages>
         <group>@core</group>
-        <package>net-tools</package>
+        <package>net-tools,file,nano,dialog,python2-pythondialog,git</package>
     </packages>
 
     <stage1loader>none</stage1loader>
@@ -36,6 +36,7 @@
         <repo name="c7buildroot" path="ftp://192.168.1.3/c7buildroot/"></repo>
         <repo name="c7pass1" path="ftp://192.168.1.3/c7pass1/"></repo>
         <repo name="comps" path="ftp://192.168.1.3/comps/"></repo>
+        <repo name="gsoc2015" path="ftp://192.168.1.3/gsoc2015/"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
     <extlinuxconf>true</extlinuxconf>

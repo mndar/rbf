@@ -9,7 +9,7 @@
     
     <packages>
         <group>@core</group>
-        <package>net-tools,file,nano,dialog,python2-pythondialog</package>
+        <package>net-tools,file,nano,dialog,python2-pythondialog,git</package>
     </packages>
 
     <stage1loader>none</stage1loader>
@@ -20,7 +20,7 @@
     </kernel>    
 
     <config>
-        <hostname>cubietruck</hostname>
+        <hostname>qemu</hostname>
         <selinux>disabled</selinux>
         <network>
             <interface name="eth0" config="dhcp">

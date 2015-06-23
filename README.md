@@ -13,7 +13,7 @@ This project is still in the development stage.
 I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
 
 **Tested Emulators**
-- Qemu
+- Qemu [HowTo](doc/QEMU_README.md)
 
 **Tested Boards**
 - Cubietruck
