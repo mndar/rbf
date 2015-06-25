@@ -612,7 +612,7 @@ class BoardTemplateParser():
                 for r in self.repoNames:
                     repoEnableString = repoEnableString + r + ","
                 self.rbfScript.write("echo [INFO ]  $0 Installing Kernel Packages. Please Wait\n")
-                self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " install kernel dracut-config-generic 2>> rbf.log\n")
+                self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " install -y kernel dracut-config-generic 2>> rbf.log\n")
                 self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.KERNEL_PACKAGE_INSTALL_ERROR))
         elif self.kernelType == "none":
             logging.info("Not Installing Any Kernel")
