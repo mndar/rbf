@@ -553,12 +553,12 @@ class BoardTemplateParser():
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.RPMDB_INIT_ERROR))
         if len(packageGroupsString) > 0:
            self.rbfScript.write("echo [INFO ]  $0 Installing Package Groups. Please Wait\n")
-           self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " groupinstall " + packageGroupsString+" 2>> rbf.log\n")
+           self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " groupinstall -y " + packageGroupsString+" 2>> rbf.log\n")
            self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.GROUP_INSTALL_ERROR))
            
         if len(packagesString) > 0:
             self.rbfScript.write("echo [INFO ]  $0 Installing Packages. Please Wait\n")
-            self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " install " + packagesString+" 2>> rbf.log\n")
+            self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " install -y " + packagesString+" 2>> rbf.log\n")
             self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.PACKAGE_INSTALL_ERROR))
     
     def installKernel(self):
