@@ -82,7 +82,7 @@ class BoardTemplateCreator():
             if code in (Dialog.CANCEL, Dialog.ESC):
                     break
             (code, filename) = self.dialogInstance.inputbox("Please enter a filename", init=imageName)
-            self.imagePath = path + os.sep + filename
+            self.imagePath = os.path.join(path, filename)
             self.lastKnownPath = path
             
             if code in (Dialog.CANCEL, Dialog.ESC):
@@ -284,7 +284,7 @@ class BoardTemplateCreator():
             return var
             
     def getDirPath(self,var,message):
-        (ret, dirpath) = self.dialogInstance.dselect(self.lastKnownPath, 10, 50, title="Select Firmware Dir", extra_button=True, extra_label="None")        
+        (ret, dirpath) = self.dialogInstance.dselect(self.lastKnownPath, 10, 50, title=message, extra_button=True, extra_label="None")        
         if ret == Dialog.OK:
             if os.path.isdir(dirpath):
                 self.lastKnownPath = dirpath
@@ -345,7 +345,7 @@ class BoardTemplateCreator():
                 kernelChoices.append(["Modules", self.modulesPath])
                 kernelChoices.append(["DTB", self.dtbPath])
             kernelChoices.append(["Done", "Exit Kernel Config"])
-            (code, tag) = self.dialogInstance.menu("Kernel Menu", width=60, choices=kernelChoices)
+            (code, tag) = self.dialogInstance.menu("Kernel Menu", width=0, height=0, menu_height = 0,  choices=kernelChoices)
             if code in (Dialog.CANCEL, Dialog.ESC):
                 break;
             if tag == "Kernel Type":
@@ -388,6 +388,10 @@ class BoardTemplateCreator():
                 self.etcOverlay = self.getDirPath(self.etcOverlay, "Select etc Overlay Dir")
             elif tag == "Finalize Script":
                 self.finalizeScript = self.getFilePath(self.finalizeScript, "Select Finalize Script")
+            elif tag == "Distro Name":
+                (code, distroname) = self.dialogInstance.inputbox("Enter Distro Name", init="CentOS",title="Distro Name")
+                if code == Dialog.OK:
+                    self.linuxDistro = distroname
             elif tag == "Work Dir":
                 self.workDir = self.getDirPath(self.workDir, "Select Work Dir")
             elif tag == "Done":
@@ -436,7 +440,7 @@ class BoardTemplateCreator():
         elements = [ ("Name", 1, 1, self.repoData[n-1][BoardTemplateCreator.REPO_NAME], 1, 20, 20, 20),
                      ("Base URL", 2, 1, self.repoData[n-1][BoardTemplateCreator.REPO_URL], 2, 20, 20, 512)]
                      
-        code, fields = self.dialogInstance.form("Edit Partition", elements, width=50, extra_button=True, extra_label="Delete")
+        code, fields = self.dialogInstance.form("Edit Repo", elements, width=50, extra_button=True, extra_label="Delete")
         if code == Dialog.OK:
             self.repoData[n-1][BoardTemplateCreator.REPO_NAME] = fields[BoardTemplateCreator.REPO_NAME]
             self.repoData[n-1][BoardTemplateCreator.REPO_URL] = fields[BoardTemplateCreator.REPO_URL]
@@ -699,7 +703,7 @@ class BoardTemplateCreator():
         while True:
             (code, tag) = self.dialogInstance.menu(
             "Network Configuration",
-            width=60,
+            width=0, height = 0, menu_height = 0,
             choices=[("Add", "Add an Interface"),
                      ("Edit", "Edit an Interface"),
                      ("Delete", "Delete an Interface"),
@@ -719,7 +723,7 @@ class BoardTemplateCreator():
     def showSysConfig(self):
         """System Configuration"""
         while True:
-            (code, tag) = self.dialogInstance.menu("System Configuration",width=60,height=20,
+            (code, tag) = self.dialogInstance.menu("System Configuration",width=0,height=0,menu_height=0,
             choices=[("Hostname", self.hostName),
                      ("SELinux", self.selinuxConf),
                      ("Network Settings", "Enter Network Config Here"),
@@ -731,7 +735,7 @@ class BoardTemplateCreator():
                 if code == Dialog.OK:
                     self.hostName = tag
             elif tag == "SELinux":
-                selinuxChoices = {'Enforcing': 'SELinux security policy is enforced','permissive': 'SELinux prints warnings instead of enforcing', 'Disabled': 'No SELinux policy is loaded.'}
+                selinuxChoices = {'Enforcing': 'SELinux security policy is enforced','Permissive': 'SELinux prints warnings instead of enforcing', 'Disabled': 'No SELinux policy is loaded.'}
                 configChoices = []
                 
                 for selinux in selinuxChoices.keys():
@@ -884,7 +888,7 @@ class BoardTemplateCreator():
             (code, filename) = self.dialogInstance.inputbox("XML Template Filename")
             if code == Dialog.OK:
                 try:
-                    self.generatedXmlPath = dirpath + os.sep + filename
+                    self.generatedXmlPath = os.path.join(dirpath, filename)
                     fileWriter = open(self.generatedXmlPath,"w")
                     fileWriter.write(xmlData)
                     fileWriter.close()
@@ -914,7 +918,7 @@ class BoardTemplateCreator():
     def mainMenu(self):
         """Displays Main RootFS Build Factory Menu"""
         while True:
-            (code, tag) = self.dialogInstance.menu("Main Menu",width=60, height=22, menu_height=22,
+            (code, tag) = self.dialogInstance.menu("Main Menu",width=0, height=0, menu_height=0,
             choices=[("Load Template", self.xmlTemplate[self.xmlTemplate.rfind("/")+1:]),
                      ("Board Info", "Selected Board: " + self.boardName),
                      ("Image Path", "Image: " + self.imagePath + " " + self.imageSize),
