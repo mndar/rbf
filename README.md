@@ -29,6 +29,9 @@ I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
 - CompuLab TrimSlice
 - Beaglebone
 
+**Unsupported Boards**
+- Refer [this](doc/ADD_SUPPORT_README.md) document to learn how to add support for more boards.
+
 If you have any of the untested boards, please test the RootFS Build Factory and let us know the results. You can email me [emailmandar at gmail.com] or discuss it on the CentOS arm-dev mailing list http://lists.centos.org/mailman/listinfo/arm-dev
 
 **Note:**
@@ -76,7 +79,8 @@ If you have any of the untested boards, please test the RootFS Build Factory and
         yum install dialog
         
 - The main menu looks like this
-![rbf dialog main menu](snaps/rbfdialog_main.png "Main Menu")
+
+<center>![rbf dialog main menu](doc/screenshots/rbfdialog_main.png "Main Menu")</center>
 
 - There are quite a few options to set. So the best way to use it is to load a working template first and then edit the options as per your requirement.
 
