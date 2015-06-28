@@ -592,7 +592,7 @@ class BoardTemplateParser():
                 logging.info("Using Custom Kernel: " + self.kernelPath)
                 logging.info("Using Initrd: " + self.initrdPath)
                 logging.info("Using Modules: " + modulesPath)
-                logging.info("Using DTP Dir: " + self.dtbDir)
+                logging.info("Using DTB: " + self.dtbDir)
                 
                 self.rbfScript.write("echo [INFO ]  $0 Copying Custom Kernel\n")
                 self.rbfScript.write("cp -rv " + self.kernelPath + " " + self.workDir + "/boot &>> rbf.log \n")
@@ -683,7 +683,7 @@ class BoardTemplateParser():
                 self.rbfScript.write("cat " + self.rootSshKey +" >> " + self.workDir +"/root/.ssh/authorized_keys\n")
                 self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.ROOT_SSH_KEY_ERROR))
             else:
-                logging.error("Could not find root ssh public key")
+                logging.error("Could not find root ssh public key in: " + self.rootSshKey)
                 sys.exit(BoardTemplateParser.SSH_KEY_NOT_FOUND)
                 
         logging.info("Setting SELinux status to " + self.selinuxConf)
