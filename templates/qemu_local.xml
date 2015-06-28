@@ -1,10 +1,10 @@
 <template>    
     <board>qemu</board>
-    <image size="2548M" type="raw" path="qemu-centos-image-local.img"></image>
+    <image size="3G" type="raw" path="qemu-centos-image-local.img"></image>
     <partitions>
         <partition size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
-        <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
-        <partition size="1G" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition size="500M" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
     </partitions>
     
     <packages>
@@ -22,6 +22,8 @@
     <config>
         <hostname>qemu</hostname>
         <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>/home/mandar/.ssh/id_rsa.pub</rootsshkey>
         <network>
             <interface name="eth0" config="dhcp">
             </interface>

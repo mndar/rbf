@@ -9,8 +9,8 @@ Being developed for Google Summer Of Code 2015
 *Mentor: Ian McLeod [imcleod at redhat.com]*
 
 
-This project is still in the development stage.
-I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories
+- This project is still in the development stage. I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories.
+- Default **root** password has now been set to **password1234** in all templates.
 
 **Tested Emulators**
 - Qemu [HowTo](doc/QEMU_README.md)
@@ -36,7 +36,17 @@ If you have any of the untested boards, please test the RootFS Build Factory and
 
 **Note:**
 - You need to be root to use RootFS Build Factory
-- One of the initial checks rbf.py makes is if you have the required programs to generate images. My test setup is Fedora 21 ARM and CentOS 7 ARM on Cubietruck.
+- One of the initial checks rbf.py makes is if you have the required programs to generate images. 'expect' is now required to set the root password. Install it using
+        
+        yum install expect
+        
+- If you want to use rbfdialog.py, 'dialog' is required as a dependency of python2-pythondialog (gsoc2015 repo). Install it using
+
+        yum install dialog
+        yum install python2-pythondialog
+        
+- My test setup is Fedora 21 ARM and CentOS 7 ARM on Cubietruck.
+- root password has been set to password1234 in all templates.
 - You need to install *dosfstools* if you want to create vfat partitions.
 - the etc overlay directory (default ./etc) is not cleared before every run. It allows you to copy any config files to the new installroot. So files present in the etc overlay directory will be copied to the new installroot's /etc.
 

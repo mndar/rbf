@@ -26,6 +26,8 @@
     <config>
         <hostname>cubietruck</hostname>
         <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
         <network>
             <interface name="eth0" config="dhcp">
                 <ipaddress>192.168.1.202</ipaddress>

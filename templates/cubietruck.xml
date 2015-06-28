@@ -22,6 +22,8 @@
     <config>
         <hostname>cubietruck</hostname>
         <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>/root/.ssh/id_rsa.pub</rootsshkey>
         <network>
             <interface name="eth0" config="dhcp">
             </interface>

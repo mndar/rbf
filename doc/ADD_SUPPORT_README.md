@@ -65,7 +65,9 @@ Creating the XML Template
 - ***System Configuration***
     - ***Hostname***: Hostname for your new rootfs. Written to */etc/hostname*.
     - ***SELinux***: *Disabled*, *Permissive* or *Enforcing*.
-    - ***Network Settings***: Network config for you interfaces.
+    - ***Root Password***: Sets root password for new rootfs
+    - ***Root SSH Public Key***: Key to copy to /root/.ssh/authorized_keys in the new rootfs
+    - ***Network Settings***: Network config for your interfaces.
 
 <center>![rbfdialog system configuration](screenshots/system_configuration.png "System Configuration")</center>
 <br/>

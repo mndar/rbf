@@ -16,6 +16,9 @@ class BoardTemplateCreator():
         self.dialogInstance = Dialog(dialog="dialog")
         self.rbfUtils = RbfUtils()
         self.dialogInstance.add_persistent_args(["--backtitle", "RootFS Build Factory"])
+        self.initValues()
+        
+    def initValues(self):
         self.xmlTemplate = "none"
         self.imageSize = ""
         self.imagePath = ""
@@ -28,6 +31,8 @@ class BoardTemplateCreator():
         self.stage1Loader = "none"
         self.ubootPath = "none"
         self.rootFiles = "none"
+        self.rootPass = ""
+        self.rootSshKey = "none"
         self.firmwarePath = "none"
         self.extlinuxConf = "false"
         self.kernelType = "stock"
@@ -49,7 +54,7 @@ class BoardTemplateCreator():
         self.totalNetworkInterfaces = 0
         self.networkConf = []
         self.homePath = os.environ['HOME']
-        self.lastKnownPath = self.homePath
+        self.lastKnownPath = os.getcwd()
         self.generatedXmlPath = ""
         
     def showBoards(self):
@@ -486,9 +491,8 @@ class BoardTemplateCreator():
     
     def getTagValue(self, dom, domTag):
         """Extracts Tag Value from DOMTree"""
-        xmlTag = dom.getElementsByTagName(domTag)
-        for x in xmlTag:
-            return x.childNodes[0].data            
+        xmlTag = dom.getElementsByTagName(domTag)[0]
+        return xmlTag.firstChild.data
     
     def loadTemplate(self):
         self.xmlTemplate = self.getFilePath(self.xmlTemplate,"Select XML Template")
@@ -496,128 +500,132 @@ class BoardTemplateCreator():
             return
         try:
             self.boardDom = parse(self.xmlTemplate)
-        except:
-            self.dialogInstance.msgbox("Error Parsing XML Template File")
+        except Exception as error:
+            self.dialogInstance.msgbox("Error Parsing XML Template File: " + str(error))
             self.xmlTemplate="none"
             return
         
-        #try:    
-        self.boardName = self.getTagValue(self.boardDom,"board")        
-        self.workDir = self.getTagValue(self.boardDom,"workdir")        
-        self.finalizeScript = self.getTagValue(self.boardDom,"finalizescript")
-        self.selinuxConf = self.getTagValue(self.boardDom,"selinux")
-        self.etcOverlay = self.getTagValue(self.boardDom,"etcoverlay")
-        self.linuxDistro = self.getTagValue(self.boardDom,"distro")
-        self.extlinuxConf = self.getTagValue(self.boardDom,"extlinuxconf")
-        self.hostName = self.getTagValue(self.boardDom,"hostname")
-        self.rootFiles = self.getTagValue(self.boardDom,"rootfiles")
-        self.stage1Loader = self.getTagValue(self.boardDom,"stage1loader")
-        self.ubootPath = self.getTagValue(self.boardDom,"uboot")
-        self.firmwareDir = self.getTagValue(self.boardDom,"firmware")
-        
-        imageDom = self.boardDom.getElementsByTagName("image")[0]
-        self.imagePath = imageDom.getAttribute("path")
-        self.imageSize = imageDom.getAttribute("size")
-        if self.imageSize[-1:] not in ("M","G") or not self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
-            self.dialogInstance.msgbox("Invalid Image Size: " + self.imageSize + " (Has to be an Integer with suffix M for MB and G for GB)")
-            self.imageSize = ""
-            self.imagePath = ""
-        
-        kernelDom = self.boardDom.getElementsByTagName("kernel")
-        for k in kernelDom:
-            self.kernelType = k.getAttribute("type")
-            if self.kernelType == "custom":
-                try:
-                    self.kernelPath = k.getElementsByTagName('image')[0].childNodes[0].data
-                    self.initrdPath = k.getElementsByTagName('initrd')[0].childNodes[0].data
-                    self.dtbPath = k.getElementsByTagName('dtbdir')[0].childNodes[0].data
-                    self.modulesPath = k.getElementsByTagName('modules')[0].childNodes[0].data
-                except:
-                    self.dialogInstance.msgbox("Error reading Custom Kernel Info",title="Custom Kernel Error")
-    
-        self.imageData = []    
-        self.primaryCount = 0
-        self.totalPartitionCount = 0
-        self.extendedStart = False
-        invalidPartitionData = False
-        partitionsDom = self.boardDom.getElementsByTagName("partitions")
-        for partitions in partitionsDom:
-            partition = partitions.getElementsByTagName("partition")
-            for p in partition:
-                ptype = p.getAttribute("type")
-                pdata = [p.getAttribute("size"), ptype, p.getAttribute("fs"), p.getAttribute("mountpoint")]
-                if self.validatePartitionData(pdata):
-                    if ptype in ("primary","extended"):
-                        self.primaryCount = self.primaryCount + 1
-                    if ptype == "extended":
-                        self.extendedStart = True
-                    self.imageData.append(pdata)
-                    self.totalPartitionCount = self.totalPartitionCount + 1
-                else:
-                    invalidPartitionData = True
-                    break
-            if invalidPartitionData:
-                self.imageData = []    
-                self.primaryCount = 0
-                self.totalPartitionCount = 0
-                self.extendedStart = False
-                self.dialogInstance.msgbox("Invalid Partition Data.\nYou will have to create partitions manually",title="Partition Error")
-                break
-       
-        self.repoData = []
-        self.totalRepos = 0
-        reposDom = self.boardDom.getElementsByTagName("repos")
-        for repos in reposDom:
-            repo = repos.getElementsByTagName("repo")
-            for r in repo:
-                rdata = [r.getAttribute("name"), r.getAttribute("path")]
-                self.repoData.append(rdata)
-                self.totalRepos = self.totalRepos + 1
-                
-        packagesDom = self.boardDom.getElementsByTagName("packages")
-        for packageElement in packagesDom:
-            try:
-                self.groupPackageString = packageElement.getElementsByTagName('group')[0].childNodes[0].data
-            except:
-                self.groupPackageString = ""
-            try: 
-                self.packageString = packageElement.getElementsByTagName('package')[0].childNodes[0].data
-            except:
-                self.packageString = ""
-         
-        self.networkData = []
-        self.totalNetworkInterfaces = 0
-        networkDom = self.boardDom.getElementsByTagName("network")
-        for n in networkDom:
-            interface = n.getElementsByTagName("interface")
-            for i in interface:
-                name = i.getAttribute("name").lower()
-                config = i.getAttribute("config").lower()
-                if config == "static":
+        try:    
+            self.boardName = self.getTagValue(self.boardDom,"board")        
+            self.workDir = self.getTagValue(self.boardDom,"workdir")        
+            self.finalizeScript = self.getTagValue(self.boardDom,"finalizescript")
+            self.selinuxConf = self.getTagValue(self.boardDom,"selinux")
+            self.etcOverlay = self.getTagValue(self.boardDom,"etcoverlay")
+            self.linuxDistro = self.getTagValue(self.boardDom,"distro")
+            self.extlinuxConf = self.getTagValue(self.boardDom,"extlinuxconf")
+            self.hostName = self.getTagValue(self.boardDom,"hostname")
+            
+            self.rootPass = self.getTagValue(self.boardDom,"rootpass")
+            self.rootSshKey = self.getTagValue(self.boardDom,"rootsshkey")
+
+            self.rootFiles = self.getTagValue(self.boardDom,"rootfiles")
+            self.stage1Loader = self.getTagValue(self.boardDom,"stage1loader")
+            self.ubootPath = self.getTagValue(self.boardDom,"uboot")
+            self.firmwareDir = self.getTagValue(self.boardDom,"firmware")
+            
+            imageDom = self.boardDom.getElementsByTagName("image")[0]
+            self.imagePath = imageDom.getAttribute("path")
+            self.imageSize = imageDom.getAttribute("size")
+            if self.imageSize[-1:] not in ("M","G") or not self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
+                self.dialogInstance.msgbox("Invalid Image Size: " + self.imageSize + " (Has to be an Integer with suffix M for MB and G for GB)")
+                self.imageSize = ""
+                self.imagePath = ""
+            
+            kernelDom = self.boardDom.getElementsByTagName("kernel")
+            for k in kernelDom:
+                self.kernelType = k.getAttribute("type")
+                if self.kernelType == "custom":
                     try:
-                        ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
-                        subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
-                        gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
-                        dns1 = i.getElementsByTagName("dns1")[0].childNodes[0].data
-                        try:
-                            dns2 = i.getElementsByTagName("dns2")[0].childNodes[0].data
-                        except:
-                            dns2 = ""
+                        self.kernelPath = k.getElementsByTagName('image')[0].childNodes[0].data
+                        self.initrdPath = k.getElementsByTagName('initrd')[0].childNodes[0].data
+                        self.dtbPath = k.getElementsByTagName('dtbdir')[0].childNodes[0].data
+                        self.modulesPath = k.getElementsByTagName('modules')[0].childNodes[0].data
                     except:
-                        self.dialogInstance.msgbox("Invalid static interface config.\nNot adding interface " + name)
-                        continue
-                else:
-                    ipaddress = ""
-                    subnetmask = ""
-                    gateway = ""
-                    dns1 = ""
-                    dns2 = ""
-                ndata = [name, config, ipaddress, subnetmask, gateway, dns1, dns2 ]
-                self.networkData.append(ndata)
-                self.totalNetworkInterfaces = self.totalNetworkInterfaces + 1
-        #except:                        
-        #    self.dialogInstance.msgbox("Incorrect XMl. Please load a working one")
+                        self.dialogInstance.msgbox("Error reading Custom Kernel Info",title="Custom Kernel Error")
         
+            self.imageData = []    
+            self.primaryCount = 0
+            self.totalPartitionCount = 0
+            self.extendedStart = False
+            invalidPartitionData = False
+            partitionsDom = self.boardDom.getElementsByTagName("partitions")
+            for partitions in partitionsDom:
+                partition = partitions.getElementsByTagName("partition")
+                for p in partition:
+                    ptype = p.getAttribute("type")
+                    pdata = [p.getAttribute("size"), ptype, p.getAttribute("fs"), p.getAttribute("mountpoint")]
+                    if self.validatePartitionData(pdata):
+                        if ptype in ("primary","extended"):
+                            self.primaryCount = self.primaryCount + 1
+                        if ptype == "extended":
+                            self.extendedStart = True
+                        self.imageData.append(pdata)
+                        self.totalPartitionCount = self.totalPartitionCount + 1
+                    else:
+                        invalidPartitionData = True
+                        break
+                if invalidPartitionData:
+                    self.imageData = []    
+                    self.primaryCount = 0
+                    self.totalPartitionCount = 0
+                    self.extendedStart = False
+                    self.dialogInstance.msgbox("Invalid Partition Data.\nYou will have to create partitions manually",title="Partition Error")
+                    break
+           
+            self.repoData = []
+            self.totalRepos = 0
+            reposDom = self.boardDom.getElementsByTagName("repos")
+            for repos in reposDom:
+                repo = repos.getElementsByTagName("repo")
+                for r in repo:
+                    rdata = [r.getAttribute("name"), r.getAttribute("path")]
+                    self.repoData.append(rdata)
+                    self.totalRepos = self.totalRepos + 1
+                    
+            packagesDom = self.boardDom.getElementsByTagName("packages")
+            for packageElement in packagesDom:
+                try:
+                    self.groupPackageString = packageElement.getElementsByTagName('group')[0].childNodes[0].data
+                except:
+                    self.groupPackageString = ""
+                try: 
+                    self.packageString = packageElement.getElementsByTagName('package')[0].childNodes[0].data
+                except:
+                    self.packageString = ""
+             
+            self.networkData = []
+            self.totalNetworkInterfaces = 0
+            networkDom = self.boardDom.getElementsByTagName("network")
+            for n in networkDom:
+                interface = n.getElementsByTagName("interface")
+                for i in interface:
+                    name = i.getAttribute("name").lower()
+                    config = i.getAttribute("config").lower()
+                    if config == "static":
+                        try:
+                            ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
+                            subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
+                            gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
+                            dns1 = i.getElementsByTagName("dns1")[0].childNodes[0].data
+                            try:
+                                dns2 = i.getElementsByTagName("dns2")[0].childNodes[0].data
+                            except:
+                                dns2 = ""
+                        except:
+                            self.dialogInstance.msgbox("Invalid static interface config.\nNot adding interface " + name)
+                            continue
+                    else:
+                        ipaddress = ""
+                        subnetmask = ""
+                        gateway = ""
+                        dns1 = ""
+                        dns2 = ""
+                    ndata = [name, config, ipaddress, subnetmask, gateway, dns1, dns2 ]
+                    self.networkData.append(ndata)
+                    self.totalNetworkInterfaces = self.totalNetworkInterfaces + 1
+        except Exception as error:                        
+            self.dialogInstance.msgbox("Incorrect XMl. Please load a working one. [Error: " + str(error)+ "]")
+            self.initValues()
         
     def addInterface(self):
         while True:
@@ -726,6 +734,8 @@ class BoardTemplateCreator():
             (code, tag) = self.dialogInstance.menu("System Configuration",width=0,height=0,menu_height=0,
             choices=[("Hostname", self.hostName),
                      ("SELinux", self.selinuxConf),
+                     ("Root Password", "Set Root Password Here"),
+                     ("Root SSH Public Key", self.rootSshKey),
                      ("Network Settings", "Enter Network Config Here"),
                      ("Done", "Exit System Configuration")])
             if code in (Dialog.CANCEL, Dialog.ESC) or tag == "Done":
@@ -748,6 +758,21 @@ class BoardTemplateCreator():
                 (code, tag) = self.dialogInstance.radiolist("Choose SELinux Config", width=65, choices=configChoices)
                 if code == Dialog.OK:
                     self.selinuxConf = tag.lower()
+                    
+            elif tag == "Root Password":
+                (code1, password1) = self.dialogInstance.passwordbox("Enter Root Password", insecure=True)
+                if code1 == Dialog.OK:
+                    (code2, password2) = self.dialogInstance.passwordbox("Enter Root Password Again", insecure=True)
+                    if code2 == Dialog.OK:
+                        if password1 == password2:
+                            self.rootPass = password2
+                            self.dialogInstance.msgbox("Root Password Set", title="Password Set")
+                        else:
+                            self.dialogInstance.msgbox("Passwords Don't Match", title="Password Error")
+                            
+            elif tag == "Root SSH Public Key":
+                self.rootSshKey = self.getFilePath(self.rootSshKey, "Select Root SSH Public Key")
+                    
             elif tag == "Network Settings":
                 self.showNetworkConf()
     
@@ -830,9 +855,13 @@ class BoardTemplateCreator():
         hostname.appendChild(doc.createTextNode(self.hostName))
         selinux = doc.createElement("selinux")
         selinux.appendChild(doc.createTextNode(self.selinuxConf))
+        rootpass = doc.createElement("rootpass")
+        rootpass.appendChild(doc.createTextNode(self.rootPass))
+        rootsshkey = doc.createElement("rootsshkey")
+        rootsshkey.appendChild(doc.createTextNode(self.rootSshKey))        
         network = doc.createElement("network")
         
-        for i in [hostname,selinux,network]:
+        for i in [hostname,selinux,rootpass,rootsshkey,network]:
             config.appendChild(i)
         
         for i in range(0,len(self.networkData)):

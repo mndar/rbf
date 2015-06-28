@@ -2,7 +2,7 @@ Board Scripts README
 ====================
 Explanation
 -----------
-- Board Scripts are simple bash scripts that are called after installation of all package groups, packages, the kernel, setting of root password(blank) and setting of SELinux Status.
+- Board Scripts are simple bash scripts that are called after installation of all package groups, packages, the kernel, setting of root password, authorized ssh key and setting of SELinux Status.
 
 - They take the following arguments 
 

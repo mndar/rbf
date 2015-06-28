@@ -13,7 +13,6 @@ import platform
 import logging
 import uuid
 import errno
-from xml.dom.minidom import parse
 import xml.dom.minidom
 from rbfutils import RbfUtils
 
@@ -84,8 +83,8 @@ class BoardTemplateParser():
     Parses XML Template and performs required actions on image file
     """
     INDEX, SIZE, BEGIN, PTYPE, FS, MOUNTPOINT, UUID = range (0,7)
-    INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR, NO_ROOT_FOUND = range(100,121)    
-    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, DD_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR = range (200,225)
+    INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR, NO_ROOT_FOUND, SSH_KEY_NOT_FOUND = range(100,122)    
+    LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, DD_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, ROOT_SSH_KEY_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR = range (200,226)
     RbfScriptErrors = { LOOP_DEVICE_EXISTS: "LOOP_DEVICE_EXISTS: Specified Loop Device Already Exists. Check losetup -l",
                         FALLOCATE_ERROR : "FALLOCATE_ERROR: Error While Creating Image File",
                         DD_ERROR : "DD_ERROR: Error While Creating Image File",
@@ -100,7 +99,8 @@ class BoardTemplateParser():
                         GROUP_INSTALL_ERROR: "GROUP_INSTALL_ERROR: Error Installing Some Package Groups",
                         PACKAGE_INSTALL_ERROR: "PACKAGE_INSTALL_ERROR: Error Installing Some Packages",
                         ETC_OVERLAY_ERROR: "ETC_OVERLAY_ERROR: Could Not Copy /etc Overlay",
-                        ROOT_PASS_ERROR: "ROOT_PASS_ERROR: Could Not Set Empty Root Pass",
+                        ROOT_PASS_ERROR: "ROOT_PASS_ERROR: Could Not Set Root Pass",
+                        ROOT_SSH_KEY_ERROR: "ROOT_SSH_KEY_ERROR: Could Not Setup root ssh key",
                         SELINUX_ERROR: "SELINUX_ERROR: Could Not Set SELINUX Status",
                         BOARD_SCRIPT_ERROR: "BOARD_SCRIPT_ERROR: Error In Board Script",
                         FINALIZE_SCRIPT_ERROR: "FINALIZE_SCRIPT_ERROR: Error In Finalize Script",
@@ -136,32 +136,39 @@ class BoardTemplateParser():
     
     def getTagValue(self, dom, domTag):
         """Extracts Tag Value from DOMTree"""
-        xmlTag = dom.getElementsByTagName(domTag)
-        for x in xmlTag:
-            return x.childNodes[0].data
+        xmlTag = dom.getElementsByTagName(domTag)[0]
+        return xmlTag.firstChild.data
+        
             
     def parseTemplate(self):
         """Parses xmlTemplate"""
         logging.info("Parsing: "+ self.xmlTemplate)
         try:
             self.boardDom = xml.dom.minidom.parse(self.xmlTemplate)
-        except:
-            logging.error("Error Parsing XML Template File")
+        except Exception as error:
+            logging.error("Error Parsing XML Template File: " + str(error))
             sys.exit(BoardTemplateParser.ERROR_PARSING_XML)
         
-        self.boardName = self.getTagValue(self.boardDom,"board")        
-        self.workDir = self.getTagValue(self.boardDom,"workdir")        
-        self.finalizeScript = self.getTagValue(self.boardDom,"finalizescript")
-        self.loopDevice = subprocess.check_output(['losetup','-f']).strip()
-        self.selinuxConf = self.getTagValue(self.boardDom,"selinux")
-        self.etcOverlay = self.getTagValue(self.boardDom,"etcoverlay")
-        self.linuxDistro = self.getTagValue(self.boardDom,"distro")
-        self.extlinuxConf = self.getTagValue(self.boardDom,"extlinuxconf")
-        self.hostName = self.getTagValue(self.boardDom,"hostname")
-        self.rootFiles = self.getTagValue(self.boardDom,"rootfiles")
-        self.stage1Loader = self.getTagValue(self.boardDom,"stage1loader")
-        self.ubootPath = self.getTagValue(self.boardDom,"uboot")
-        self.firmwareDir = self.getTagValue(self.boardDom,"firmware")
+        try:
+            self.boardName = self.getTagValue(self.boardDom,"board")        
+            self.workDir = self.getTagValue(self.boardDom,"workdir")        
+            self.finalizeScript = self.getTagValue(self.boardDom,"finalizescript")
+            self.loopDevice = subprocess.check_output(['losetup','-f']).strip()
+            self.selinuxConf = self.getTagValue(self.boardDom,"selinux")
+            self.etcOverlay = self.getTagValue(self.boardDom,"etcoverlay")
+            self.linuxDistro = self.getTagValue(self.boardDom,"distro")
+            self.extlinuxConf = self.getTagValue(self.boardDom,"extlinuxconf")
+            self.hostName = self.getTagValue(self.boardDom,"hostname")
+            self.rootFiles = self.getTagValue(self.boardDom,"rootfiles")
+            self.stage1Loader = self.getTagValue(self.boardDom,"stage1loader")
+            self.ubootPath = self.getTagValue(self.boardDom,"uboot")
+            self.firmwareDir = self.getTagValue(self.boardDom,"firmware")
+            self.rootPass = self.getTagValue(self.boardDom,"rootpass")
+            self.rootSshKey = self.getTagValue(self.boardDom,"rootsshkey")
+        except Exception as error:
+            logging.error("Error While Reading XML Tags: " + str(error))
+            sys.exit(BoardTemplateParser.ERROR_PARSING_XML)
+            
         logging.info("Successfully Parsed Board Template For: " + self.boardName)
     
     def getShellExitString(self,exitCode):
@@ -665,10 +672,20 @@ class BoardTemplateParser():
         self.rbfScript.write("cp -rpv "+ self.etcOverlay + "/* " + self.workDir+"/etc/ &>> rbf.log \n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.ETC_OVERLAY_ERROR))
         
-        logging.info("Setting empty root pass")
-        self.rbfScript.write("sed -i 's/root:x:/root::/' " + self.workDir + "/etc/passwd  &>> rbf.log \n")
+        logging.info("Setting root password")
+        self.rbfScript.write("expect rootpass.exp " + self.workDir + " " + self.rootPass + " &>> rbf.log\n")
         self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.ROOT_PASS_ERROR))
-        
+            
+        if self.rootSshKey != "none":
+            if os.path.exists(self.rootSshKey): 
+                logging.info("Setting up root ssh public key")
+                self.rbfScript.write("mkdir -p " + self.workDir + "/root/.ssh\n")
+                self.rbfScript.write("cat " + self.rootSshKey +" >> " + self.workDir +"/root/.ssh/authorized_keys\n")
+                self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.ROOT_SSH_KEY_ERROR))
+            else:
+                logging.error("Could not find root ssh public key")
+                sys.exit(BoardTemplateParser.SSH_KEY_NOT_FOUND)
+                
         logging.info("Setting SELinux status to " + self.selinuxConf)
         self.rbfScript.write("sed -i 's/SELINUX=enforcing/SELINUX=" + self.selinuxConf + "/' " + self.workDir + "/etc/selinux/config  &>> rbf.log \n")
         self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.SELINUX_ERROR))
@@ -858,7 +875,7 @@ if ( __name__ == "__main__"):
         
     
         
-    if checkCommandExistsAccess(['echo', 'dd','parted','read','losetup','mount','mkdir','rm','cat','cp','rpm','yum','sed','chroot','partprobe']):
+    if checkCommandExistsAccess(['echo', 'dd','parted','read','losetup','mount','mkdir','rm','cat','cp','rpm','yum','sed','chroot','partprobe','expect']):
         logging.info("All Commands Found. Continuing")
     else:
         logging.error("Cannot Continue")

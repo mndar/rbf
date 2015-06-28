@@ -27,6 +27,8 @@
     <config>
         <hostname>rpi2_custom</hostname>
         <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
         <network>
             <interface name="eth0" config="static">
                 <ipaddress>192.168.1.125</ipaddress>

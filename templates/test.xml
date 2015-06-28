@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<template>
+	<board>qemu</board>
+	<image path="qemu-centos-image-local.img" size="3G" type="raw"/>
+	<partitions>
+		<partition fs="ext3" mountpoint="/boot" size="500M" type="primary"/>
+		<partition fs="swap" mountpoint="swap" size="500M" type="primary"/>
+		<partition fs="ext4" mountpoint="/" size="2G" type="primary"/>
+	</partitions>
+	<packages>
+		<group>@core</group>
+		<package>net-tools,file,nano,dialog,python2-pythondialog,git</package>
+	</packages>
+	<stage1loader>none</stage1loader>
+	<uboot>none</uboot>
+	<rootfiles>none</rootfiles>
+	<firmware>none</firmware>
+	<kernel type="stock"/>
+	<config>
+		<hostname>qemu</hostname>
+		<selinux>disabled</selinux>
+		<rootpass>abcd</rootpass>
+		<rootsshkey>/home/mandar/.ssh/id_rsa.pub</rootsshkey>
+		<network>
+			<interface config="dhcp" name="eth0"/>
+		</network>
+	</config>
+	<etcoverlay>./etc</etcoverlay>
+	<finalizescript>./boards.d/finalize.sh</finalizescript>
+	<distro>centos</distro>
+	<repos>
+		<repo name="c7buildroot" path="ftp://192.168.1.3/c7buildroot/"/>
+		<repo name="c7pass1" path="ftp://192.168.1.3/c7pass1/"/>
+		<repo name="comps" path="ftp://192.168.1.3/comps/"/>
+		<repo name="gsoc2015" path="ftp://192.168.1.3/gsoc2015/"/>
+	</repos>
+	<workdir>/tmp/temp</workdir>
+	<extlinuxconf>true</extlinuxconf>
+</template>
