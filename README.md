@@ -20,10 +20,10 @@ Being developed for Google Summer Of Code 2015
 - Odroid C1
 - Raspberry Pi 2
 - Banana Pi (Tested By Nicolas [nicolas at shivaserv.fr])
-
+- Cubieboard 2 (Tested by David Tischler [david.tischler at mininodes.com]
+ 
 **Untested Boards**
 - Cubieboard
-- Cubieboard 2
 - Wandboard{solo,dual,quad}
 - Pandaboard
 - CompuLab TrimSlice
