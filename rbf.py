@@ -83,7 +83,7 @@ class BoardTemplateParser():
     Parses XML Template and performs required actions on image file
     """
     INDEX, SIZE, BEGIN, PTYPE, FS, MOUNTPOINT, UUID = range (0,7)
-    INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR, NO_ROOT_FOUND, SSH_KEY_NOT_FOUND = range(100,122)    
+    INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_PARSING_XML_TAGS, ERROR_IMAGE_SIZE, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES, NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT, LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, NO_PARTITIONS_FOUND, PRIMARY_PARTITION_SIZES_ERROR, LOGICAL_PARTITION_SIZES_ERROR, FSTAB_ERROR, CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND, NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR, NO_ROOT_FOUND, SSH_KEY_NOT_FOUND, NO_NETWORK = range(100,127)    
     LOOP_DEVICE_EXISTS, FALLOCATE_ERROR, DD_ERROR, PARTED_ERROR, LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR, WRITE_REPO_ERROR, COPY_KERNEL_ERROR, COPY_FIRMWARE_ERROR, RPMDB_INIT_ERROR, GROUP_INSTALL_ERROR, PACKAGE_INSTALL_ERROR, ETC_OVERLAY_ERROR, ROOT_PASS_ERROR, ROOT_SSH_KEY_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR, FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY, LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR, COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR = range (200,226)
     RbfScriptErrors = { LOOP_DEVICE_EXISTS: "LOOP_DEVICE_EXISTS: Specified Loop Device Already Exists. Check losetup -l",
                         FALLOCATE_ERROR : "FALLOCATE_ERROR: Error While Creating Image File",
@@ -139,6 +139,8 @@ class BoardTemplateParser():
         xmlTag = dom.getElementsByTagName(domTag)[0]
         return xmlTag.firstChild.data
         
+    def setTemplate(self, filename):
+        self.xmlTemplate = filename
             
     def parseTemplate(self):
         """Parses xmlTemplate"""
@@ -147,7 +149,7 @@ class BoardTemplateParser():
             self.boardDom = xml.dom.minidom.parse(self.xmlTemplate)
         except Exception as error:
             logging.error("Error Parsing XML Template File: " + str(error))
-            sys.exit(BoardTemplateParser.ERROR_PARSING_XML)
+            return BoardTemplateParser.ERROR_PARSING_XML
         
         try:
             self.boardName = self.getTagValue(self.boardDom,"board")        
@@ -167,10 +169,11 @@ class BoardTemplateParser():
             self.rootSshKey = self.getTagValue(self.boardDom,"rootsshkey")
         except Exception as error:
             logging.error("Error While Reading XML Tags: " + str(error))
-            sys.exit(BoardTemplateParser.ERROR_PARSING_XML)
+            return BoardTemplateParser.ERROR_PARSING_XML_TAGS
             
         logging.info("Successfully Parsed Board Template For: " + self.boardName)
-    
+        return 0
+        
     def getShellExitString(self,exitCode):
         """Generates Shell Exit command. Used to check successful command execution"""
         return "if [ $? != 0 ]; then exit " + str(exitCode) + "; fi\n\n"
@@ -193,24 +196,23 @@ class BoardTemplateParser():
                 logging.info("Creating Image: " + self.imageSize + " " + imageType + " " + self.imagePath)
             else:
                  logging.error("Invalid Image Size: " + self.imageSize + " (Has to be an Integer with suffix M for MB and G for GB)")
-                 sys.exit(BoardTemplateParser.ERROR_IMAGE_FILE)   
+                 return BoardTemplateParser.ERROR_IMAGE_SIZE
         else:
             logging.error("No image tag found or image tag incomplete.")
-            sys.exit(BoardTemplateParser.ERROR_IMAGE_FILE)
+            return BoardTemplateParser.ERROR_IMAGE_FILE
     
         
         self.imageSize = self.rbfUtils.getImageSizeInM(self.imageSize)
 
         if os.path.exists(self.imagePath):
             logging.error("Image Already Exists")
-            sys.exit(BoardTemplateParser.IMAGE_EXISTS)
+            return BoardTemplateParser.IMAGE_EXISTS
         
         self.rbfScript.write("echo [INFO ]    $0 Creating " + self.imagePath + "\n")
         self.rbfScript.write("dd if=/dev/zero of=\"" + self.imagePath + "\" bs=1M count=0 seek="+self.imageSize[0:-1] + " &>> rbf.log \n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.DD_ERROR))
-        #self.rbfScript.write("fallocate -l " + self.imageSize + " " + self.imagePath + " &>> rbf.log \n")
-        #self.rbfScript.write(self.getShellExitString(BoardTemplateParser.FALLOCATE_ERROR))
-    
+        return 0
+            
     def verifyPrimaryPartitionSizes(self,partitionsDom):
         """Checks if Primary & Extended partition size is exceeding total image size"""
         logging.info("Verifying that Primary & Extended partition sizes doesn't exceed image size")
@@ -227,20 +229,24 @@ class BoardTemplateParser():
                 sizeNumber = sizeString[0:-1]
                 if not (self.rbfUtils.isSizeInt(sizeNumber)):
                     logging.error("Primary Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
-                    sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
+                    return False
+                    #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
                 size = self.rbfUtils.getImageSizeInM(sizeString)
                 sizeSuffix=size[-1:]
                 if not (sizeSuffix=="M" or sizeSuffix=="G"):
                     logging.error("Primary Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
-                    sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
+                    return False
+                    #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
                 partitionSizeSum = partitionSizeSum + int(size[0:-1])
         logging.info("Image Size: " + self.imageSize + " Parititon Size Sum: " + str(partitionSizeSum)+"M")
         if not foundRoot:
             logging.error("No Root Found. Check Parititon Data")
-            sys.exit(BoardTemplateParser.NO_ROOT_FOUND)
+            return False
+            #sys.exit(BoardTemplateParser.NO_ROOT_FOUND)
         if int(self.imageSize[0:-1]) >= partitionSizeSum:
             return True
         else:
+            logging.error("Primary Parititon Sizes Exceed Image Size")
             return False
     
     def verifyLogicalPartitionSizes(self,partitionsDom):
@@ -267,35 +273,36 @@ class BoardTemplateParser():
                     sizeNumber = sizeString[0:-1]
                     if not (self.rbfUtils.isSizeInt(sizeNumber)):
                         logging.error("Logical Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
-                        sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
+                        return False
+                        #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
                     size = self.rbfUtils.getImageSizeInM(sizeString)
                     
                     sizeSuffix=size[-1:]
                     if not (sizeSuffix=="M" or sizeSuffix=="G"):
                         logging.error("Logical Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
-                        sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
+                        return False
+                        #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
                     logicalPartitionSizeSum = logicalPartitionSizeSum + int(size[0:-1])
             if int(extendedPartitionSize[0:-1]) >= logicalPartitionSizeSum:
                 return True
             else:
+                logging.error("Logical Parititon Sizes Exceed Extended Parititon Size")
                 return False
                     
     def createPartitions(self):
         """Creates Partitions"""
         logging.info("Creating Partitions")
-        try:
-            partitionsDom = self.boardDom.getElementsByTagName("partitions")
-        except:
+        partitionsDom = self.boardDom.getElementsByTagName("partitions")
+        
+        if partitionsDom == []:
             logging.error("No Partitions Found")
-            sys.exit(BoardTemplateParser.NO_PARTITIONS_FOUND)
+            return BoardTemplateParser.NO_PARTITIONS_FOUND
        
         if not self.verifyPrimaryPartitionSizes(partitionsDom):
-            logging.error("Primary Parititon Sizes Exceed Image Size")
-            sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)
+            return BoardTemplateParser.PRIMARY_PARTITION_SIZES_ERROR
             
         if not self.verifyLogicalPartitionSizes(partitionsDom):
-            logging.error("Logical Parititon Sizes Exceed Extended Parititon Size")
-            sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)
+            return BoardTemplateParser.LOGICAL_PARTITION_SIZES_ERROR
             
         self.rbfScript.write("losetup " + self.loopDevice + " \"" + self.imagePath + "\" &>> rbf.log\n")
         self.rbfScript.write(self.getShellExitString(BoardTemplateParser.LOSETUP_ERROR))
@@ -327,15 +334,15 @@ class BoardTemplateParser():
                     
                     if extendedStart == True and ptype == "extended":
                         logging.error("Cannot have more than 1 extended paritition")
-                        sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA) 
+                        return BoardTemplateParser.INVALID_PARTITION_DATA
                     
                     if ptype == "logical" and extendedStart == False:
                         logging.error("Cannot Create Logical Parititon before Extended")
-                        sys.exit(BoardTemplateParser.LOGICAL_PART_ERROR)
+                        return BoardTemplateParser.LOGICAL_PART_ERROR
                         
                     if (ptype =="primary" or ptype == "extended") and primaryPartitionCount == 4:
                         logging.error("Cannot Have More Than 4 Primary Partitions")
-                        sys.exit(BoardTemplateParser.TOTAL_PARTITIONS_ERROR)
+                        return BoardTemplateParser.TOTAL_PARTITIONS_ERROR
 
                     if ptype == "primary" or ptype == "extended":
                         primaryPartitionCount = primaryPartitionCount + 1
@@ -409,11 +416,13 @@ class BoardTemplateParser():
                     partedString = partedString + "mkpart " + ptype + " " + fs + " " + begin + "s " + end + "s "
                 else:
                     logging.error("Invalid Partition Data")
-                    sys.exit(BoardTemplateParser.INVALID_PARTITION_DATA)
+                    return BoardTemplateParser.INVALID_PARTITION_DATA
+                    
             self.rbfScript.write("echo [INFO ]   $0 Creating Parititons\n")
             self.rbfScript.write(partedString + " &>> rbf.log \n")
             self.rbfScript.write(self.getShellExitString(BoardTemplateParser.PARTED_ERROR))
-
+            return 0
+            
     def delDeviceIfExists(self, device):
         """Generates command to detach loop device if it exists"""
         return "[ -b " + device + " ] && losetup -d " + device + " &>> rbf.log \nsleep 2\n"
@@ -438,18 +447,19 @@ class BoardTemplateParser():
             if fs == "vfat":
                 if not checkCommandExistsAccess(['mkfs.vfat']):
                     logging.error("Please Install mkfs.vfat")
-                    sys.exit(BoardTemplateParser.SYS_MKFS_COMMANDS_NOT_FOUND)                                    
+                    return BoardTemplateParser.SYS_MKFS_COMMANDS_NOT_FOUND
                 self.rbfScript.write("mkfs.vfat -n " + partuuid + " " + self.loopDevice + "p"+ index + " &>> rbf.log \n")
             elif fs == "swap":
                 if not checkCommandExistsAccess(['mkswap']):
                     logging.error("Please Install mkswap")
-                    sys.exit(BoardTemplateParser.SYS_MKFS_COMMANDS_NOT_FOUND)
+                    return BoardTemplateParser.SYS_MKFS_COMMANDS_NOT_FOUND
                 self.rbfScript.write("mkswap -U " + partuuid + " " + self.loopDevice + "p" + index +" &>> rbf.log \n")
             else:
                 if not checkCommandExistsAccess(['mkfs.'+fs]):
                     logging.error("Please Install mkfs."+fs)
-                    sys.exit(BoardTemplateParser.SYS_MKFS_COMMANDS_NOT_FOUND)
-                self.rbfScript.write("mkfs." + fs + " -U " + partuuid + " " + self.loopDevice + "p" + index + " &>> rbf.log \n")    
+                    return BoardTemplateParser.SYS_MKFS_COMMANDS_NOT_FOUND
+                self.rbfScript.write("mkfs." + fs + " -U " + partuuid + " " + self.loopDevice + "p" + index + " &>> rbf.log \n")
+        return 0    
                 
     def mountPartitions(self):
         """Mounting Partitions"""
@@ -499,7 +509,9 @@ class BoardTemplateParser():
             self.reposDom = self.boardDom.getElementsByTagName("repos")
             for repos in self.reposDom:
                 repo = repos.getElementsByTagName("repo")
-                for r in repo:                    
+                for r in repo:
+                    if not (r.hasAttribute("name") and r.hasAttribute("path")):
+                        return BoardTemplateParser.INCORRECT_REPOSITORY
                     name = r.getAttribute("name")
                     path = r.getAttribute("path")
                     self.repoNames.append(name)
@@ -514,7 +526,8 @@ class BoardTemplateParser():
                     self.rbfScript.write(self.getShellExitString(BoardTemplateParser.WRITE_REPO_ERROR))
         except:
             logging.error("Distro Repository Information Incorrect")
-            sys.exit(BoardTemplateParser.INCORRECT_REPOSITORY)
+            return BoardTemplateParser.INCORRECT_REPOSITORY
+        return 0
         
     def generatePackageString(self, packageList):
         """Generates String from supplied List"""
@@ -525,11 +538,10 @@ class BoardTemplateParser():
                 
     def installPackages(self):
         """Installing Packages"""
-        try:
-            packagesDom = self.boardDom.getElementsByTagName("packages")
-        except:
+        packagesDom = self.boardDom.getElementsByTagName("packages")
+        if packagesDom == []:
             logging.error("No Packages Supplied. Please Fix Template")
-            sys.exit(BoardTemplateParser.NO_PACKAGES)
+            return BoardTemplateParser.NO_PACKAGES
             
         for packageElement in packagesDom:
             try:
@@ -567,12 +579,14 @@ class BoardTemplateParser():
             self.rbfScript.write("echo [INFO ]  $0 Installing Packages. Please Wait\n")
             self.rbfScript.write("yum "+ repoEnableString[0:-1] + " --installroot=" + self.workDir + " install -y " + packagesString+" 2>> rbf.log\n")
             self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.PACKAGE_INSTALL_ERROR))
-    
+        return 0
+        
     def installKernel(self):
         """Installing Kernel"""
         if self.ubootPath != "none" and not os.path.exists(self.ubootPath):
             logging.error("Could Not Find uboot in:" + self.ubootPath)
-            sys.exit(BoardTemplateParser.NO_UBOOT)
+            return BoardTemplateParser.NO_UBOOT
+            
         logging.info("Installing Kernel")
         kernelDom = self.boardDom.getElementsByTagName("kernel")
         for k in kernelDom:
@@ -581,7 +595,7 @@ class BoardTemplateParser():
                 logging.info("Kernel Type: " + self.kernelType)
             else:
                 logging.error("No Kernel Type Specified")
-                sys.exit(BoardTemplateParser.NO_KERNEL_TYPE)
+                return BoardTemplateParser.NO_KERNEL_TYPE
         
         if self.kernelType == "custom":
             for k in kernelDom:
@@ -626,14 +640,15 @@ class BoardTemplateParser():
         
         if self.firmwareDir != "none" and not os.path.exists(self.firmwareDir):
             logging.error("Could Not Find Firmware in:" + self.firmwareDir)
-            sys.exit(BoardTemplateParser.NO_FIRMWARE_FOUND)
+            return BoardTemplateParser.NO_FIRMWARE_FOUND
             
         if self.firmwareDir != "none":
             self.rbfScript.write("mkdir -p " + self.workDir + "/lib/firmware &>> rbf.log \n")
             self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_FIRMWARE_ERROR))
             self.rbfScript.write("cp -rv " + self.firmwareDir + "/* " + self.workDir + "/lib/firmware &>> rbf.log \n")
             self.rbfScript.write(self.getShellExitString(BoardTemplateParser.COPY_FIRMWARE_ERROR))
-            
+        return 0
+        
     def createInitramfs(self):
         """Creates Initramfs for stock kernel"""
         self.initramfsScript = open("initramfs.sh","w")
@@ -684,7 +699,7 @@ class BoardTemplateParser():
                 self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.ROOT_SSH_KEY_ERROR))
             else:
                 logging.error("Could not find root ssh public key in: " + self.rootSshKey)
-                sys.exit(BoardTemplateParser.SSH_KEY_NOT_FOUND)
+                return BoardTemplateParser.SSH_KEY_NOT_FOUND
                 
         logging.info("Setting SELinux status to " + self.selinuxConf)
         self.rbfScript.write("sed -i 's/SELINUX=enforcing/SELINUX=" + self.selinuxConf + "/' " + self.workDir + "/etc/selinux/config  &>> rbf.log \n")
@@ -705,7 +720,8 @@ class BoardTemplateParser():
         self.rbfScript.write(self.getShellErrorString(BoardTemplateParser.FINALIZE_SCRIPT_ERROR))
         self.rbfScript.write("exit 0\n")
         self.rbfScript.close()
-    
+        return 0
+        
     def getPartition(self,mountpoint):
         """Gets Partition UUID/LABEL From Dict"""
         for i in range(0,len(self.imageData)):
@@ -759,12 +775,12 @@ class BoardTemplateParser():
         """Creates /etc/fstab"""
         if not os.path.exists(self.etcOverlay):
             logging.error("Need Etc Overlay To Continue")
-            sys.exit(BoardTemplateParser.NO_ETC_OVERLAY)
+            return BoardTemplateParser.NO_ETC_OVERLAY
         try:
             fstab = open(self.etcOverlay+"/fstab","w")
         except:
             logging.error("Could Not Create fstab")
-            sys.exit(BoardTemplateParser.FSTAB_ERROR)
+            return BoardTemplateParser.FSTAB_ERROR
             
         fstab.write("#Generated by RootFS Build Factory\n")
         for i in range(0,len(self.imageData)):
@@ -776,7 +792,8 @@ class BoardTemplateParser():
             fs = self.imageData[i][BoardTemplateParser.FS]
             fstab.write(partitionPath + " " + mountpoint + " " + fs + " noatime 0 0\n")
         fstab.close()
-    
+        return 0
+        
     def makeDirTree(self, path):
         try:
             os.makedirs(path)
@@ -789,11 +806,11 @@ class BoardTemplateParser():
     def configureNetwork(self):
         """Configure Network"""
         logging.info("Reading Network Config")
-        try:
-            networkDom = self.boardDom.getElementsByTagName("network")
-        except:
+        totalNetworkInterfaces = 0
+        networkDom = self.boardDom.getElementsByTagName("network")
+        if networkDom == []:
             logging.error("No Network Config Found")
-            return
+            return BoardTemplateParser.NO_NETWORK
        
         networkConfigPath = self.etcOverlay+"/sysconfig/network-scripts"
                 
@@ -825,7 +842,11 @@ class BoardTemplateParser():
                     if dns2 != "":
                         ifcfg.write("DNS2=\""+dns2+"\"\n")
                     ifcfg.close()
+                    totalNetworkInterfaces = totalNetworkInterfaces + 1
+                elif config == "dhcp":
+                    totalNetworkInterfaces = totalNetworkInterfaces + 1
                     
+        return totalNetworkInterfaces
                 
     def cleanUp(self):
         """CleanUp Steps"""
@@ -888,17 +909,26 @@ if ( __name__ == "__main__"):
         sys.exit(BoardTemplateParser.INCORRECT_ARGUMENTS)    
     
     boardParser = BoardTemplateParser(action, xmlTemplate)
-    boardParser.parseTemplate()
-    boardParser.createImage()
-    boardParser.createPartitions()
-    boardParser.createFilesystems()
+    ret = boardParser.parseTemplate()
+    if  ret != 0: sys.exit(ret)
+    ret = boardParser.createImage()
+    if  ret != 0: sys.exit(ret)
+    ret = boardParser.createPartitions()
+    if  ret != 0: sys.exit(ret)
+    ret = boardParser.createFilesystems()
+    if  ret != 0: sys.exit(ret)
     boardParser.mountPartitions()
-    boardParser.writeRepos()
-    boardParser.installPackages()
-    boardParser.makeBootable()
+    ret = boardParser.writeRepos()
+    if  ret != 0: sys.exit(ret)
+    ret = boardParser.installPackages()
+    if  ret != 0: sys.exit(ret)
+    ret = boardParser.makeBootable()
+    if  ret != 0: sys.exit(ret)
     boardParser.configureNetwork()
-    boardParser.installKernel()
-    boardParser.finalActions()    
+    ret = boardParser.installKernel()
+    if  ret != 0: sys.exit(ret)
+    ret = boardParser.finalActions()    
+    if  ret != 0: sys.exit(ret)
     
     if action == "build":
         logging.info("Running RootFS Build Factory script")

@@ -1,0 +1,58 @@
+<template>    
+    <board>rpi2</board>
+    <image size="4G" type="raw" path="rpi2-image.img"></image>
+    <partitions>
+        <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="1000M" type="primary" fs="ext4" mountpoint="/home"></partition>
+        <partition size="500M" type="primary" fs="ext4" mountpoint="/var"></partition>
+        <partition size="2096M" type="extended" fs="" mountpoint=""></partition>
+        <partition size="1200" type="logical" fs="ext4" mountpoint="/"></partition>         
+        <partition size="896M" type="logical" fs="ext4" mountpoint="/opt"></partition>
+    </partitions>
+    
+    <packages>
+        <group>@core</group>
+        <package></package>
+    </packages>
+
+    <stage1loader>none</stage1loader>
+    <uboot>none</uboot>
+    <rootfiles>files/rpi2/boot_rpi2.tar.xz</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="custom">
+        <image>files/rpi2/kernel7.img</image>
+        <initrd>none</initrd>
+        <modules>files/rpi2/3.18.14-v7+</modules>
+        <dtbdir>none</dtbdir>
+    </kernel>    
+
+    <config>
+        <hostname>rpi2</hostname>
+        <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="static">
+                <ipaddress>192.168.1.151</ipaddress>
+                <subnetmask>255.255.255.0</subnetmask>
+                <gateway>192.168.1.1</gateway>
+                <dns1>8.8.8.8</dns1>
+                <dns2>8.8.4.4</dns2>
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>fedora</distro>
+    <repos>
+        <repo name="c7buildroot" path="ftp://192.168.1.3/c7buildroot/"></repo>
+        <repo name="c7pass1" path="ftp://192.168.1.3/c7pass1/"></repo>
+        <repo name="comps" path="ftp://192.168.1.3/comps/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>false</extlinuxconf>
+    
+ </template>
+ 
