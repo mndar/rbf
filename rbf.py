@@ -230,19 +230,16 @@ class BoardTemplateParser():
                 if not (self.rbfUtils.isSizeInt(sizeNumber)):
                     logging.error("Primary Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
                     return False
-                    #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
                 size = self.rbfUtils.getImageSizeInM(sizeString)
                 sizeSuffix=size[-1:]
                 if not (sizeSuffix=="M" or sizeSuffix=="G"):
                     logging.error("Primary Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
                     return False
-                    #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
                 partitionSizeSum = partitionSizeSum + int(size[0:-1])
         logging.info("Image Size: " + self.imageSize + " Parititon Size Sum: " + str(partitionSizeSum)+"M")
         if not foundRoot:
             logging.error("No Root Found. Check Parititon Data")
             return False
-            #sys.exit(BoardTemplateParser.NO_ROOT_FOUND)
         if int(self.imageSize[0:-1]) >= partitionSizeSum:
             return True
         else:
@@ -274,14 +271,12 @@ class BoardTemplateParser():
                     if not (self.rbfUtils.isSizeInt(sizeNumber)):
                         logging.error("Logical Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
                         return False
-                        #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                        
                     size = self.rbfUtils.getImageSizeInM(sizeString)
                     
                     sizeSuffix=size[-1:]
                     if not (sizeSuffix=="M" or sizeSuffix=="G"):
                         logging.error("Logical Parititon Size Error. Only Integers with suffix G or M allowed. You Specified " + sizeString)
                         return False
-                        #sys.exit(BoardTemplateParser.PARTITION_SIZES_ERROR)                    
                     logicalPartitionSizeSum = logicalPartitionSizeSum + int(size[0:-1])
             if int(extendedPartitionSize[0:-1]) >= logicalPartitionSizeSum:
                 return True
