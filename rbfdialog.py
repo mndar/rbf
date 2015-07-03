@@ -11,6 +11,28 @@ class BoardTemplateCreator():
     REPO_NAME, REPO_URL = range(0,2)
     IF_NAME, IF_CONFIG, IF_IP, IF_NETMASK, IF_GATEWAY, IF_DNS1, IF_DNS2 = range(0,7)
     BOARDS_DIR="boards.d"
+    NO_FILE, ERROR_PARSING_XML, ERROR_PARSING_XML_TAGS, INVALID_IMAGE_SIZE, ERROR_READING_CUSTOM_KERNEL_INFO, ERROR_READING_PARTITIONS, NO_IMAGE, INVALID_PARTITION_SIZE, EXTENDED_PARTITION_ERROR, TOTAL_PARTITIONS_ERROR, PRIMARY_PARTITION_EXCEEDS, LOGICAL_BEFORE_EXTENDED, LOGICAL_PARTITION_EXCEEDS, NO_PARTITIONS, INCORRECT_REPOSITORY, NO_PACKAGES, BAD_NETWORK_DATA, NO_NETWORK, NO_KERNEL, NO_KERNEL_TYPE = range (100,120)
+    RbfDialogErrors = {NO_FILE: "NO_FILE: Could not find XML File",
+                       ERROR_PARSING_XML: "ERROR_PARSING_XML: Error Parsing XML File",
+                       ERROR_PARSING_XML_TAGS: "ERROR_PARSING_XML_TAGS: Could not read all XML Elements",
+                       INVALID_IMAGE_SIZE: "INVALID_IMAGE_SIZE: Should be integer with suffer M for MB and G for GB",
+                       ERROR_READING_CUSTOM_KERNEL_INFO: "ERROR_READING_CUSTOM_KERNEL_INFO: Error Reading custom Kernel Info",
+                       ERROR_READING_PARTITIONS: "ERROR_READING_PARTITIONS: You will have to create partitions manually",
+                       NO_IMAGE: "Please create an Image First",
+                       INVALID_PARTITION_SIZE: "Invalid Size. Has to be an Integer with suffix M for MB and G for GB",
+                       EXTENDED_PARTITION_ERROR: "Only 1 Extended Partition Allowed",
+                       TOTAL_PARTITIONS_ERROR: "Cannot create more than 4 primary partitions",
+                       PRIMARY_PARTITION_EXCEEDS: "Primary Partition Sizes exceed Image Size",
+                       LOGICAL_BEFORE_EXTENDED: "Cannot Create Logical Before Extended",
+                       LOGICAL_PARTITION_EXCEEDS: "Logical Partition Sizes Exceed Extended Partition Size",
+                       NO_PARTITIONS: "No Partitions Found",
+                       INCORRECT_REPOSITORY: "Incorrect Repo Info",
+                       NO_PACKAGES: "No Packages Defined",
+                       BAD_NETWORK_DATA: "Bad Network Data: Not all interfaces were added to config",
+                       NO_NETWORK: "No Network Data Found",
+                       NO_KERNEL: "No Kernel Info Found",
+                       NO_KERNEL_TYPE: "No Kernel Type Specified"
+                      } 
     def __init__(self):
         #self.dialogInstance = Dialog(dialog="Xdialog", compat="Xdialog")
         self.dialogInstance = Dialog(dialog="dialog")
@@ -117,34 +139,34 @@ class BoardTemplateCreator():
     
     def validatePartitionData(self, fields):
         if self.imageSize == "":
-            self.dialogInstance.msgbox("Please create an Image first")
-            return False
+            #self.dialogInstance.msgbox("Please create an Image first")
+            return BoardTemplateCreator.NO_IMAGE
         sizeNumber = fields[BoardTemplateCreator.SIZE][0:-1]
         if not self.rbfUtils.isSizeInt(sizeNumber):
-            self.dialogInstance.msgbox("Invalid Size. Has to be an Integer with suffix M for MB and G for GB",width=80,title="Partition Size Error")
-            return False
+            #self.dialogInstance.msgbox("Invalid Size. Has to be an Integer with suffix M for MB and G for GB",width=80,title="Partition Size Error")
+            return BoardTemplateCreator.INVALID_PARTITION_SIZE
             
         if fields[BoardTemplateCreator.SIZE][-1:] not in ("M","G"):
-            self.dialogInstance.msgbox("Invalid Size. Has to be an Integer with suffix M for MB and G for GB",width=80,title="Partition Size Error")
-            return False
+            #self.dialogInstance.msgbox("Invalid Size. Has to be an Integer with suffix M for MB and G for GB",width=80,title="Partition Size Error")
+            return BoardTemplateCreator.INVALID_PARTITION_SIZE
         
         if self.extendedStart == True and fields[BoardTemplateCreator.PTYPE].lower() == "extended":
-            self.dialogInstance.msgbox("Only 1 Extended Partition Allowed")
-            return False
+            #self.dialogInstance.msgbox("Only 1 Extended Partition Allowed")
+            return BoardTemplateCreator.EXTENDED_PARTITION_ERROR
         
         #only 4 primary partitions supported
         if self.primaryCount >= 4 and fields[BoardTemplateCreator.PTYPE].lower() in ("primary","extended"):            
-            self.dialogInstance.msgbox("Cannot create more than 4 primary partitions",title="Partition Error")
-            return False
+            #self.dialogInstance.msgbox("Cannot create more than 4 primary partitions",title="Partition Error")
+            return BoardTemplateCreator.TOTAL_PARTITIONS_ERROR
             
         #check if total size of primary partitions exceed image size
         if fields[BoardTemplateCreator.PTYPE].lower() in ("primary","extended"):
             #check if imagesize is a valid one
             if not self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
-                self.dialogInstance.msgbox("Invalid Image Size: "+ self.imageSize + "\nYou will have to enter image and parition information manually.",title="Image Size Error")
+                #self.dialogInstance.msgbox("Invalid Image Size: "+ self.imageSize + "\nYou will have to enter image and parition information manually.",title="Image Size Error")
                 self.imagePath = ""
                 self.imageSize = ""
-                return False
+                return BoardTemplateCreator.INVALID_IMAGE_SIZE
                 
             imageSizeInM = int(self.rbfUtils.getImageSizeInM(self.imageSize)[0:-1])
             primaryPartSize = 0
@@ -154,13 +176,13 @@ class BoardTemplateCreator():
             
             primaryPartSize = primaryPartSize + int(self.rbfUtils.getImageSizeInM(fields[BoardTemplateCreator.SIZE])[0:-1])
             if primaryPartSize > imageSizeInM:
-                self.dialogInstance.msgbox("Primary Partition Sizes exceed Image Size",width=80,title="Partition Error")
-                return False
+                #self.dialogInstance.msgbox("Primary Partition Sizes exceed Image Size",width=80,title="Partition Error")
+                return BoardTemplateCreator.PRIMARY_PARTITION_EXCEEDS
                     
         #check if user is trying to create a logical partition before an extended one
         if self.extendedStart == False and fields[BoardTemplateCreator.PTYPE].lower() == "logical":            
-                self.dialogInstance.msgbox("Cannot Create Logical Before Extended",title="Partition Error")
-                return False        
+                #self.dialogInstance.msgbox("Cannot Create Logical Before Extended",title="Partition Error")
+                return BoardTemplateCreator.LOGICAL_BEFORE_EXTENDED
             
         
         #check if logical partition sizes exceed extended partition size
@@ -175,10 +197,10 @@ class BoardTemplateCreator():
             
             logicalPartitionSizes = logicalPartitionSizes + int(self.rbfUtils.getImageSizeInM(fields[BoardTemplateCreator.SIZE])[0:-1])
             if logicalPartitionSizes > extendedPartitionSize:
-                self.dialogInstance.msgbox("Logical Partition Sizes Exceed Extended Partition Size", title="Logical Partition Error")
-                return False
+                #self.dialogInstance.msgbox("Logical Partition Sizes Exceed Extended Partition Size", title="Logical Partition Error")
+                return BoardTemplateCreator.LOGICAL_PARTITION_EXCEEDS
 
-        return True        
+        return 0        
             
     def addPartition(self):
         while True:
@@ -192,8 +214,8 @@ class BoardTemplateCreator():
                 (code, fields) = self.dialogInstance.form("Partition Info",elements,width=50)
                 
                 if code == Dialog.OK:
-
-                    if self.validatePartitionData(fields):
+                    ret = self.validatePartitionData(fields)
+                    if ret == 0:
                         if fields[BoardTemplateCreator.PTYPE].lower() in ("primary","extended"):
                             self.primaryCount = self.primaryCount + 1
                             
@@ -209,6 +231,8 @@ class BoardTemplateCreator():
                         p = [ fields[BoardTemplateCreator.SIZE], fields[BoardTemplateCreator.PTYPE], fields[BoardTemplateCreator.FS], fields[BoardTemplateCreator.MOUNTPOINT] ]
                         self.imageData.append(p)
                         self.totalPartitionCount = self.totalPartitionCount + 1
+                    else:
+                        self.showErrorMessage(ret)
             else:
                 break
         
@@ -494,17 +518,22 @@ class BoardTemplateCreator():
         xmlTag = dom.getElementsByTagName(domTag)[0]
         return xmlTag.firstChild.data
     
-    def loadTemplate(self):
-        self.xmlTemplate = self.getFilePath(self.xmlTemplate,"Select XML Template")
-        if not os.path.isfile(self.xmlTemplate):
-            return
+    def setTemplate(self, filename):
+        self.xmlTemplate = filename
+    
+    def showErrorMessage(self, ret):
+        self.dialogInstance.msgbox(BoardTemplateCreator.RbfDialogErrors[ret],title="Error")
+        
+    def readXml(self):
+        """Reads XML Template using xml.dom.minidom"""
         try:
             self.boardDom = parse(self.xmlTemplate)
-        except Exception as error:
-            self.dialogInstance.msgbox("Error Parsing XML Template File: " + str(error))
-            self.xmlTemplate="none"
-            return
-        
+        except:
+            self.xmlTemplate = "none"
+            return BoardTemplateCreator.ERROR_PARSING_XML
+        return 0
+            
+    def readTags(self):
         try:    
             self.boardName = self.getTagValue(self.boardDom,"board")        
             self.workDir = self.getTagValue(self.boardDom,"workdir")        
@@ -522,111 +551,165 @@ class BoardTemplateCreator():
             self.stage1Loader = self.getTagValue(self.boardDom,"stage1loader")
             self.ubootPath = self.getTagValue(self.boardDom,"uboot")
             self.firmwareDir = self.getTagValue(self.boardDom,"firmware")
-            
-            imageDom = self.boardDom.getElementsByTagName("image")[0]
-            self.imagePath = imageDom.getAttribute("path")
-            self.imageSize = imageDom.getAttribute("size")
-            if self.imageSize[-1:] not in ("M","G") or not self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
-                self.dialogInstance.msgbox("Invalid Image Size: " + self.imageSize + " (Has to be an Integer with suffix M for MB and G for GB)")
-                self.imageSize = ""
-                self.imagePath = ""
-            
-            kernelDom = self.boardDom.getElementsByTagName("kernel")
-            for k in kernelDom:
-                self.kernelType = k.getAttribute("type")
-                if self.kernelType == "custom":
-                    try:
-                        self.kernelPath = k.getElementsByTagName('image')[0].childNodes[0].data
-                        self.initrdPath = k.getElementsByTagName('initrd')[0].childNodes[0].data
-                        self.dtbPath = k.getElementsByTagName('dtbdir')[0].childNodes[0].data
-                        self.modulesPath = k.getElementsByTagName('modules')[0].childNodes[0].data
-                    except:
-                        self.dialogInstance.msgbox("Error reading Custom Kernel Info",title="Custom Kernel Error")
-        
-            self.imageData = []    
-            self.primaryCount = 0
-            self.totalPartitionCount = 0
-            self.extendedStart = False
-            invalidPartitionData = False
-            partitionsDom = self.boardDom.getElementsByTagName("partitions")
-            for partitions in partitionsDom:
-                partition = partitions.getElementsByTagName("partition")
-                for p in partition:
-                    ptype = p.getAttribute("type")
-                    pdata = [p.getAttribute("size"), ptype, p.getAttribute("fs"), p.getAttribute("mountpoint")]
-                    if self.validatePartitionData(pdata):
-                        if ptype in ("primary","extended"):
-                            self.primaryCount = self.primaryCount + 1
-                        if ptype == "extended":
-                            self.extendedStart = True
-                        self.imageData.append(pdata)
-                        self.totalPartitionCount = self.totalPartitionCount + 1
-                    else:
-                        invalidPartitionData = True
-                        break
-                if invalidPartitionData:
-                    self.imageData = []    
-                    self.primaryCount = 0
-                    self.totalPartitionCount = 0
-                    self.extendedStart = False
-                    self.dialogInstance.msgbox("Invalid Partition Data.\nYou will have to create partitions manually",title="Partition Error")
-                    break
-           
-            self.repoData = []
-            self.totalRepos = 0
-            reposDom = self.boardDom.getElementsByTagName("repos")
-            for repos in reposDom:
-                repo = repos.getElementsByTagName("repo")
-                for r in repo:
-                    rdata = [r.getAttribute("name"), r.getAttribute("path")]
-                    self.repoData.append(rdata)
-                    self.totalRepos = self.totalRepos + 1
-                    
-            packagesDom = self.boardDom.getElementsByTagName("packages")
-            for packageElement in packagesDom:
+        except:
+            return BoardTemplateCreator.ERROR_PARSING_XML_TAGS
+        return 0
+     
+    def readImageData(self):
+        imageDom = self.boardDom.getElementsByTagName("image")[0]
+        self.imagePath = imageDom.getAttribute("path")
+        self.imageSize = imageDom.getAttribute("size")
+        if self.imageSize[-1:] not in ("M","G") or not self.rbfUtils.isSizeInt(self.imageSize[0:-1]):
+            self.imageSize = ""
+            self.imagePath = ""
+            return BoardTemplateCreator.INVALID_IMAGE_SIZE
+        return 0
+    
+    def readKernelData(self):
+        kernelDom = self.boardDom.getElementsByTagName("kernel")
+        if kernelDom == []:
+            return BoardTemplateCreator.NO_KERNEL
+        for k in kernelDom:
+            if not k.hasAttribute("type"):
+                return BoardTemplateCreator.NO_KERNEL_TYPE
+            self.kernelType = k.getAttribute("type")
+            if self.kernelType == "custom":
                 try:
-                    self.groupPackageString = packageElement.getElementsByTagName('group')[0].childNodes[0].data
+                    self.kernelPath = k.getElementsByTagName('image')[0].childNodes[0].data
+                    self.initrdPath = k.getElementsByTagName('initrd')[0].childNodes[0].data
+                    self.dtbPath = k.getElementsByTagName('dtbdir')[0].childNodes[0].data
+                    self.modulesPath = k.getElementsByTagName('modules')[0].childNodes[0].data
                 except:
-                    self.groupPackageString = ""
-                try: 
-                    self.packageString = packageElement.getElementsByTagName('package')[0].childNodes[0].data
-                except:
-                    self.packageString = ""
-             
-            self.networkData = []
-            self.totalNetworkInterfaces = 0
-            networkDom = self.boardDom.getElementsByTagName("network")
-            for n in networkDom:
-                interface = n.getElementsByTagName("interface")
-                for i in interface:
-                    name = i.getAttribute("name").lower()
-                    config = i.getAttribute("config").lower()
-                    if config == "static":
-                        try:
-                            ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
-                            subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
-                            gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
-                            dns1 = i.getElementsByTagName("dns1")[0].childNodes[0].data
-                            try:
-                                dns2 = i.getElementsByTagName("dns2")[0].childNodes[0].data
-                            except:
-                                dns2 = ""
-                        except:
-                            self.dialogInstance.msgbox("Invalid static interface config.\nNot adding interface " + name)
-                            continue
-                    else:
-                        ipaddress = ""
-                        subnetmask = ""
-                        gateway = ""
-                        dns1 = ""
-                        dns2 = ""
-                    ndata = [name, config, ipaddress, subnetmask, gateway, dns1, dns2 ]
-                    self.networkData.append(ndata)
-                    self.totalNetworkInterfaces = self.totalNetworkInterfaces + 1
-        except Exception as error:                        
-            self.dialogInstance.msgbox("Incorrect XMl. Please load a working one. [Error: " + str(error)+ "]")
-            self.initValues()
+                    return BoardTemplateCreator.ERROR_READING_CUSTOM_KERNEL_INFO
+        return 0
+    
+    def readPartitions(self):
+        self.imageData = []    
+        self.primaryCount = 0
+        self.totalPartitionCount = 0
+        self.extendedStart = False
+        invalidPartitionData = False
+        partitionsDom = self.boardDom.getElementsByTagName("partitions")
+        if partitionsDom == []:
+            return BoardTemplateCreator.NO_PARTITIONS
+            
+        for partitions in partitionsDom:
+            partition = partitions.getElementsByTagName("partition")
+            for p in partition:
+                ptype = p.getAttribute("type")
+                pdata = [p.getAttribute("size"), ptype, p.getAttribute("fs"), p.getAttribute("mountpoint")]
+                ret = self.validatePartitionData(pdata)
+                if ret == 0:
+                    if ptype in ("primary","extended"):
+                        self.primaryCount = self.primaryCount + 1
+                    if ptype == "extended":
+                        self.extendedStart = True
+                    self.imageData.append(pdata)
+                    self.totalPartitionCount = self.totalPartitionCount + 1
+                else:
+                    invalidPartitionData = True
+                    break
+            if invalidPartitionData:
+                self.imageData = []    
+                self.primaryCount = 0
+                self.totalPartitionCount = 0
+                self.extendedStart = False
+                return ret
+        return 0
         
+    def readRepoData(self):
+        self.repoData = []
+        self.totalRepos = 0
+        reposDom = self.boardDom.getElementsByTagName("repos")
+        for repos in reposDom:
+            repo = repos.getElementsByTagName("repo")
+            for r in repo:
+                if not (r.hasAttribute("name") and r.hasAttribute("path")):
+                    return BoardTemplateCreator.INCORRECT_REPOSITORY
+                rdata = [r.getAttribute("name"), r.getAttribute("path")]
+                self.repoData.append(rdata)
+                self.totalRepos = self.totalRepos + 1
+        return 0
+        
+    def readPackages(self):
+        packagesDom = self.boardDom.getElementsByTagName("packages")
+        if packagesDom == []:
+            return BoardTemplateCreator.NO_PACKAGES
+        for packageElement in packagesDom:
+            try:
+                self.groupPackageString = packageElement.getElementsByTagName('group')[0].childNodes[0].data
+            except:
+                self.groupPackageString = ""
+            try: 
+                self.packageString = packageElement.getElementsByTagName('package')[0].childNodes[0].data
+            except:
+                self.packageString = ""                                        
+        return 0
+
+    def readNetworkData(self):
+        self.networkData = []
+        self.totalNetworkInterfaces = 0
+        badNetworkData = False
+        networkDom = self.boardDom.getElementsByTagName("network")
+        if networkDom == []:
+            return BoardTemplateCreator.NO_NETWORK
+        for n in networkDom:
+            interface = n.getElementsByTagName("interface")
+            for i in interface:
+                name = i.getAttribute("name").lower()
+                config = i.getAttribute("config").lower()
+                if config == "static":
+                    try:
+                        ipaddress = i.getElementsByTagName("ipaddress")[0].childNodes[0].data
+                        subnetmask = i.getElementsByTagName("subnetmask")[0].childNodes[0].data
+                        gateway = i.getElementsByTagName("gateway")[0].childNodes[0].data
+                        dns1 = i.getElementsByTagName("dns1")[0].childNodes[0].data
+                        try:
+                            dns2 = i.getElementsByTagName("dns2")[0].childNodes[0].data
+                        except:
+                            dns2 = ""
+                    except:
+                        badNetworkData = True
+                        #self.dialogInstance.msgbox("Invalid static interface config.\nNot adding interface " + name)
+                        continue
+                else:
+                    ipaddress = ""
+                    subnetmask = ""
+                    gateway = ""
+                    dns1 = ""
+                    dns2 = ""
+                ndata = [name, config, ipaddress, subnetmask, gateway, dns1, dns2 ]
+                self.networkData.append(ndata)
+                self.totalNetworkInterfaces = self.totalNetworkInterfaces + 1
+        if badNetworkData:
+            return BoardTemplateCreator.BAD_NETWORK_DATA
+        else:
+            return 0
+                        
+    def loadTemplate(self):
+        if not os.path.isfile(self.xmlTemplate):
+            return BoardTemplateCreator.NO_FILE
+        
+        ret = self.readXml()
+        if ret != 0:
+            self.showErrorMessage(ret)           
+            return ret
+            
+        ret = self.readTags()
+        if ret != 0:    self.showErrorMessage(ret)
+        ret = self.readImageData()
+        if ret != 0:    self.showErrorMessage(ret)
+        ret = self.readKernelData()
+        if ret != 0:    self.showErrorMessage(ret)
+        ret = self.readPartitions()
+        if ret != 0:    self.showErrorMessage(ret)
+        ret = self.readRepoData()
+        if ret != 0:    self.showErrorMessage(ret)
+        ret = self.readPackages()
+        if ret != 0:    self.showErrorMessage(ret)
+        ret = self.readNetworkData()
+        if ret != 0:    self.showErrorMessage(ret)
+            
     def addInterface(self):
         while True:
             code = self.dialogInstance.scrollbox(self.getNetworkDisplayString(), width=100, extra_button=True, extra_label="Add Interface", title="Network Interface Details")
@@ -966,6 +1049,7 @@ class BoardTemplateCreator():
             if code in (Dialog.CANCEL, Dialog.ESC) or tag == "Exit":
                 break;
             elif tag == "Load Template":
+                self.xmlTemplate = self.getFilePath(self.xmlTemplate,"Select XML Template")
                 self.loadTemplate()
             elif tag == "Board Info":
                 self.showBoards()

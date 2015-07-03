@@ -1,10 +1,11 @@
 <template>    
     <board>cubietruck</board>
-    <image size="4G" type="raw" path="cubietruck-centos-image.img"></image>
+    <image size="5G" type="raw" path="test.img"></image>
     <partitions>
-        <partition size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
-        <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
-        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="1000M" type="primary" fs="ext4" mountpoint="/home"></partition>
+        <partition size="1000M" type="primary" fs="ext4" mountpoint="/"></partition>
+        <partition size="1000M" type="primary" fs="ext4" mountpoint="/opt"></partition>
     </partitions>
     
     <packages>
@@ -13,7 +14,7 @@
     </packages>
 
     <stage1loader>none</stage1loader>
-    <uboot>../files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
+    <uboot>files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
     <rootfiles>none</rootfiles>
     <firmware>none</firmware>
     <kernel type="stock">
@@ -23,14 +24,14 @@
         <hostname>cubietruck</hostname>
         <selinux>disabled</selinux>
         <rootpass>password1234</rootpass>
-        <rootsshkey>none</rootsshkey>
+        <rootsshkey>/root/.ssh/id_rsa.pub</rootsshkey>
         <network>
             <interface name="eth0" config="dhcp">
             </interface>
         </network>        
     </config>
     
-    <etcoverlay>../../</etcoverlay>
+    <etcoverlay>./etc</etcoverlay>
     <finalizescript>./boards.d/finalize.sh</finalizescript>
     
     <distro>centos</distro>

@@ -16,8 +16,8 @@
     <uboot>../files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
     <rootfiles>none</rootfiles>
     <firmware>none</firmware>
-    <kernel type="stock">
-    </kernel>    
+    <!-- <kernel type="stock">
+    </kernel>    -->
 
     <config>
         <hostname>cubietruck</hostname>
@@ -30,7 +30,7 @@
         </network>        
     </config>
     
-    <etcoverlay>../../</etcoverlay>
+    <etcoverlay>./etc</etcoverlay>
     <finalizescript>./boards.d/finalize.sh</finalizescript>
     
     <distro>centos</distro>
