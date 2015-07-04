@@ -839,6 +839,10 @@ class BoardTemplateParser():
                     ifcfg.close()
                     totalNetworkInterfaces = totalNetworkInterfaces + 1
                 elif config == "dhcp":
+                    self.makeDirTree(networkConfigPath)
+                    ifcfg = open (networkConfigPath+"/ifcfg-"+name,"w")
+                    ifcfg.write("TYPE=\"Ethernet\"\nBOOTPROTO=\"dhcp\"\nNM_CONTROLLED=\"yes\"\nDEFROUTE=\"yes\"\nNAME=\""+name+"\"\nUUID=\""+str(uuid.uuid4())+"\"\nONBOOT=\"yes\"\n")
+                    ifcfg.close()
                     totalNetworkInterfaces = totalNetworkInterfaces + 1
                     
         return totalNetworkInterfaces
