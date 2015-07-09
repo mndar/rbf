@@ -790,13 +790,8 @@ class BoardTemplateParser():
         return 0
         
     def makeDirTree(self, path):
-        try:
-            os.makedirs(path)
-        except OSError as osError:
-            if osError.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
-                raise
+        """Makes Dir Tree"""
+        subprocess.call(['mkdir', '-p', path])
             
     def configureNetwork(self):
         """Configure Network"""
