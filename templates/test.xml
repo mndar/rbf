@@ -8,7 +8,8 @@
 		<partition fs="ext4" mountpoint="/" size="2G" type="primary"/>
 	</partitions>
 	<packages>
-		<group>@core</group>
+		<installer>yum</installer>
+		<group>core</group>
 		<package>net-tools,file,nano,dialog,python2-pythondialog,git</package>
 	</packages>
 	<stage1loader>none</stage1loader>

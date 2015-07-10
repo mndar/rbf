@@ -11,7 +11,8 @@
     </partitions>
     
     <packages>
-        <group>@core</group>
+        <installer>yum</installer>
+        <group>core</group>
         <package></package>
     </packages>
 

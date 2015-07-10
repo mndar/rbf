@@ -8,8 +8,9 @@
     </partitions>
     
     <packages>
-        <group>@core</group>
-        <package>net-tools,file,nano,dialog,python2-pythondialog,git</package>
+        <installer>yum</installer>
+        <group>core</group>
+        <package>net-tools,file,nano,dialog,python2-pythondialog,git,expect</package>
     </packages>
 
     <stage1loader>none</stage1loader>

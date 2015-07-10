@@ -10,6 +10,7 @@
     </partitions>
     
     <packages>
+        <installer>yum</installer>
         <group></group>
         <package>bash,systemd</package>
     </packages>
