@@ -185,6 +185,7 @@ class BoardTemplateParser(object):
         self.boardName = "custom"
         self.rootDeviceIndex = 3
         self.packageInstaller = ""
+        self.releaseVer = ""
 
     def __del__(self):
         """Destructor for BoardTemplateParser"""
@@ -226,6 +227,7 @@ class BoardTemplateParser(object):
             self.firmwareDir = self.getTagValue(self.boardDom, "firmware")
             self.rootPass = self.getTagValue(self.boardDom, "rootpass")
             self.rootSshKey = self.getTagValue(self.boardDom, "rootsshkey")
+            self.releaseVer = self.getTagValue(self.boardDom, "releasever")
             self.packageInstaller = self.getTagValue(self.boardDom, "installer")
             if not checkCommandExistsAccess([self.packageInstaller]):
                 logging.error("Please install " + self.packageInstaller)
@@ -609,8 +611,7 @@ class BoardTemplateParser(object):
         self.rbfScript.write("mkdir " + self.workDir + "/proc " + self.workDir \
                              + "/sys " + self.workDir + "/dev\n")
         self.rbfScript.write("mount -t proc proc " + self.workDir + "/proc\n")
-        self.rbfScript.write("mount --rbind /dev " + self.workDir + "/dev\n")
-        self.rbfScript.write("mount --make-rslave " + self.workDir + "/dev\n")
+        self.rbfScript.write("mount --bind /dev " + self.workDir + "/dev\n")
 
     def writeRepos(self):
         """Writes Repos to /etc/yum.repos.d"""
@@ -626,13 +627,23 @@ class BoardTemplateParser(object):
                     return BoardTemplateParser.INCORRECT_REPOSITORY
                 name = r.getAttribute("name")
                 path = r.getAttribute("path")
-                self.repoNames.append(name)
                 logging.info("Found Repo: " + name + " " + path)
+                name = name + "_rbf"
+                self.repoNames.append(name)
+                if self.action == "build" and self.packageInstaller == "dnf":
+                    #write repo to host
+                    repoFile = open("/etc/yum.repos.d/" + name + ".repo", "w")
+                    repoFile.write("[" + name + "]\n")
+                    repoFile.write("name=" + name + "\n")
+                    repoFile.write("baseurl=" + path + "\n")
+                    repoFile.write("gpgcheck=0\nenabled=1\n")
+                    repoFile.close()
+                #write repo to installroot
                 repoString = "cat > " + self.workDir + "/etc/yum.repos.d/" + \
                               name + ".repo << EOF\n"
-                repoString = repoString + "["+name+"]\n"
-                repoString = repoString + "name="+name+"\n"
-                repoString = repoString + "baseurl="+path+"\n"
+                repoString = repoString + "[" + name + "]\n"
+                repoString = repoString + "name=" + name + "\n"
+                repoString = repoString + "baseurl=" + path + "\n"
                 repoString = repoString + "gpgcheck=0\nenabled=1\n"
                 repoString = repoString + "EOF\n"
                 self.rbfScript.write(repoString)
@@ -680,9 +691,9 @@ class BoardTemplateParser(object):
         logging.info("Installing Package Groups: " + packageGroupsString)
         logging.info("Installing Packages: " + packagesString)
 
-        repoEnableString = "--disablerepo=* --enablerepo="
+        repoEnableString = "--disablerepo=* "
         for r in self.repoNames:
-            repoEnableString = repoEnableString + r + ","
+            repoEnableString = repoEnableString + "--enablerepo=" + r + " "
         self.rbfScript.write("rpm --root " + self.workDir + " --initdb\n")
         self.rbfScript.write(self.getShellExitString(\
                                           BoardTemplateParser.RPMDB_INIT_ERROR))
@@ -690,9 +701,9 @@ class BoardTemplateParser(object):
             self.rbfScript.write("echo [INFO ]  $0 Installing Package Groups."\
             + " Please Wait\n")
             self.rbfScript.write(self.packageInstaller + " " + \
-                    repoEnableString[0:-1] + \
+                    repoEnableString + \
                     " --installroot=" + self.workDir + \
-                    " --releasever=$releasever groupinstall -y " + \
+                    " --releasever=" + self.releaseVer + " groupinstall -y " + \
                     packageGroupsString+" 2>> rbf.log\n")
             self.rbfScript.write(self.getShellErrorString(\
                                        BoardTemplateParser.GROUP_INSTALL_ERROR))
@@ -701,9 +712,9 @@ class BoardTemplateParser(object):
             self.rbfScript.write("echo [INFO ]  $0 Installing Packages."\
             + " Please Wait\n")
             self.rbfScript.write(self.packageInstaller + " " + \
-                    repoEnableString[0:-1] + \
+                    repoEnableString + \
                     " --installroot=" + self.workDir + \
-                    " --releasever=$releasever install -y " + \
+                    " --releasever=" + self.releaseVer + " install -y " + \
                     packagesString+" 2>> rbf.log\n")
             self.rbfScript.write(self.getShellErrorString(\
                                      BoardTemplateParser.PACKAGE_INSTALL_ERROR))
@@ -772,16 +783,17 @@ class BoardTemplateParser(object):
         elif self.kernelType == "stock":
             for k in kernelDom:
                 logging.info("Using Stock Kernel")
-                repoEnableString = "--disablerepo=* --enablerepo="
+                repoEnableString = "--disablerepo=* "
                 for r in self.repoNames:
-                    repoEnableString = repoEnableString + r + ","
+                    repoEnableString = repoEnableString + "--enablerepo=" \
+                                       + r + " "
                 self.rbfScript.write("echo [INFO ]  $0 Installing Kernel"\
                 + " Packages. Please Wait\n")
                 self.rbfScript.write(self.packageInstaller + " " + \
-                            repoEnableString[0:-1] + \
-                            " --installroot=" + self.workDir + \
-                            " --releasever=$releasever install -y " + \
-                            "kernel dracut-config-generic 2>> rbf.log\n")
+                            repoEnableString + " --installroot=" + \
+                            self.workDir +  " --releasever=" + self.releaseVer \
+                            + " install -y " \
+                            + "kernel dracut-config-generic 2>> rbf.log\n")
                 self.rbfScript.write(self.getShellErrorString(\
                               BoardTemplateParser.KERNEL_PACKAGE_INSTALL_ERROR))
         elif self.kernelType == "none":
@@ -819,7 +831,7 @@ class BoardTemplateParser(object):
                 "/boot/initramfs-" + kernelVer + \
                 ".img ]; then echo  [INFO ]  $0 Initramfs Exists; " + \
                 "else chroot " + self.workDir + \
-                " dracut --no-compress /boot/initramfs-" + \
+                " dracut /boot/initramfs-" + \
                 kernelVer + ".img " + kernelVer + "; fi 2>> rbf.log\n")
 
     def showFiles(self, directory, depth):
@@ -1082,8 +1094,6 @@ class BoardTemplateParser(object):
                 self.imageData[i][BoardTemplateParser.MOUNTPOINT]+"\n")
 
         self.cleanupScript.write("umount " + self.workDir + "/proc\n")
-        self.cleanupScript.write("umount -l " + self.workDir + "/dev/shm\n")
-        self.cleanupScript.write("umount -l " + self.workDir + "/dev/pts\n")
         self.cleanupScript.write("umount -l " + self.workDir + "/dev/\n")
         self.cleanupScript.write("sleep 2\n")
         self.cleanupScript.write("umount " + self.workDir + "\n")
@@ -1093,7 +1103,7 @@ class BoardTemplateParser(object):
         if self.action == "build":
             cleanupRet = subprocess.call(["/usr/bin/bash", "cleanup.sh"])
             if cleanupRet != 0:
-                logging.error(boardParser.RbfScriptErrors[cleanupRet])
+                logging.error("Did Not Execute Clean Up Cleanly")
         logging.info("If you need any help, please provide rbf.log rbf.sh "\
                      + "initramfs.sh cleanup.sh " + self.xmlTemplate\
                      + " and the above output.")

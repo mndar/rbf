@@ -6,7 +6,10 @@
         <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
         <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
     </partitions>
-    
+ 
+    <installer>yum</installer>
+    <releasever>7</releasever>
+   
     <!-- <packages>
         <group>@core</group>
         <package>net-tools</package>

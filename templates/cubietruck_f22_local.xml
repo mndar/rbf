@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<template>
+	<board>cubietruck</board>
+	<image path="cubietruck-f22-local-image.img" size="4G" type="raw"/>
+	<partitions>
+		<partition fs="ext3" mountpoint="/boot" size="500M" type="primary"/>
+		<partition fs="swap" mountpoint="swap" size="1G" type="primary"/>
+		<partition fs="ext4" mountpoint="/" size="2G" type="primary"/>
+	</partitions>
+	<packages>
+	    <installer>dnf</installer>
+	    <releasever>22</releasever>
+		<group>core</group>
+		<package>tar,ftp,file,nano,dialog,expect,dosfstools<package>
+	</packages>
+	<stage1loader>none</stage1loader>
+	<uboot>files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
+	<rootfiles>none</rootfiles>
+	<firmware>none</firmware>
+	<kernel type="stock"/>
+	<config>
+		<hostname>cubietruck</hostname>
+		<selinux>disabled</selinux>
+		<rootpass>password1234</rootpass>
+		<rootsshkey>none</rootsshkey>
+		<network>
+			<interface config="dhcp" name="eth0"/>
+		</network>
+	</config>
+	<etcoverlay>./etc</etcoverlay>
+	<finalizescript>./boards.d/finalize.sh</finalizescript>
+	<distro>f22</distro>
+	<repos>
+		<repo name="f22arm" path="ftp://192.168.1.3/f22arm"/>
+		<repo name="f22armupdates" path="ftp://192.168.1.3/f22armupdates"/>
+	</repos>
+	<workdir>/tmp/temp</workdir>
+	<extlinuxconf>true</extlinuxconf>
+</template>

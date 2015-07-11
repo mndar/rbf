@@ -8,6 +8,8 @@
     </partitions> -->
     
     <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
         <group>@core</group>
         <package>net-tools</package>
     </packages>

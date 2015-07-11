@@ -89,6 +89,7 @@ class BoardTemplateCreator(object):
         self.groupPackageString = "core"
         self.packageString = ""
         self.packageInstaller = "yum"
+        self.releaseVer = "7"
         self.etcOverlay = "./etc"
         self.finalizeScript = "boards.d/finalize.sh"
         self.linuxDistro = "CentOS"
@@ -684,6 +685,7 @@ class BoardTemplateCreator(object):
             self.ubootPath = self.getTagValue(self.boardDom, "uboot")
             self.firmwareDir = self.getTagValue(self.boardDom, "firmware")
             self.packageInstaller = self.getTagValue(self.boardDom, "installer")
+            self.releaseVer = self.getTagValue(self.boardDom, "releasever")
         except IndexError:
             return BoardTemplateCreator.ERROR_PARSING_XML_TAGS
         return 0
@@ -1121,6 +1123,7 @@ class BoardTemplateCreator(object):
             (code, tag) = self.dialogInstance.menu("Packages Menu", width=60,\
                           height=0, menu_height=0,\
                           choices=[("Package Installer", self.packageInstaller),
+                                   ("Release Ver", self.releaseVer),
                                    ("Package Groups", self.groupPackageString),
                                    ("Packages", self.packageString),
                                    ("Done", "Exit Package Config")])
@@ -1134,6 +1137,10 @@ class BoardTemplateCreator(object):
                 (code, self.packageString) = \
                     self.dialogInstance.inputbox("Comma Separated Packages",\
                     title="Packages", init=self.packageString)
+            elif tag == "Release Ver":
+                (code, self.releaseVer) = \
+                    self.dialogInstance.inputbox("Release Ver",\
+                    title="Release Ver", init=self.releaseVer)
             elif tag == "Package Installer":
                 self.setPackageInstaller()
 
@@ -1187,9 +1194,12 @@ class BoardTemplateCreator(object):
         package.appendChild(doc.createTextNode(self.packageString))
         installer = doc.createElement("installer")
         installer.appendChild(doc.createTextNode(self.packageInstaller))
+        releasever = doc.createElement("releasever")
+        releasever.appendChild(doc.createTextNode(self.releaseVer))
+        packages.appendChild(installer)
+        packages.appendChild(releasever)
         packages.appendChild(groupPackage)
         packages.appendChild(package)
-        packages.appendChild(installer)
 
         stage1loader.appendChild(doc.createTextNode(self.stage1Loader))
         uboot.appendChild(doc.createTextNode(self.ubootPath))

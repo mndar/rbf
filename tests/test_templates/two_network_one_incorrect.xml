@@ -8,6 +8,8 @@
     </partitions>
     
     <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
         <group>@core</group>
         <package>net-tools</package>
     </packages>
@@ -30,7 +32,7 @@
                 <subnetmask>255.255.255.0</subnetmask>
                 <gateway>192.168.1.1</gateway>
                 <dns1>8.8.8.8</dns1>
-                <dns2>8.8.4.4</dns2>
+                <!--<dns2>8.8.4.4</dns2>-->
             </interface>
             <interface name="eth1" config="static">
                 <!--<ipaddress>10.0.0.2</ipaddress> -->

@@ -1,16 +1,16 @@
 <template>    
     <board>odroidc1</board>
-    <image size="3G" type="raw" path="odroidc1-image-local.img"></image>
+    <image size="3G" type="raw" path="odroidc1-f22-local.img"></image>
     <partitions>
         <partition size="500M" type="primary" fs="vfat" mountpoint="/boot"></partition>
         <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
     </partitions>
     
     <packages>
-        <installer>yum</installer>
-        <releasever>7</releasever>
-        <group>@core</group>
-        <package></package>
+        <installer>dnf</installer>
+        <releasever>22</releasever>
+        <group>core</group>
+        <package>tar,ftp,file,nano,dialog,expect,dosfstools</package>
     </packages>
 
     <stage1loader>files/odroidc1/bl1.bin.hardkernel</stage1loader>
@@ -18,7 +18,7 @@
     <rootfiles>files/odroidc1/boot.ini</rootfiles>
     <firmware>none</firmware>
     <kernel type="custom">
-        <!-- <image>files/odroidc1/uImage</image> -->
+        <image>files/odroidc1/uImage</image>
         <initrd>files/odroidc1/uInitrd</initrd>
         <modules>files/odroidc1/3.10.66-49</modules>
         <dtbdir>files/odroidc1/meson8b_odroidc.dtb</dtbdir>
@@ -26,7 +26,7 @@
 
     <config>
         <hostname>odroidc1</hostname>
-        <selinux>disabled</selinux>
+        <selinux>permissive</selinux>
         <rootpass>password1234</rootpass>
         <rootsshkey>none</rootsshkey>
         <network>
@@ -42,11 +42,10 @@
     <etcoverlay>./etc</etcoverlay>
     <finalizescript>./boards.d/finalize.sh</finalizescript>
     
-    <distro>centos</distro>
+    <distro>f22</distro>
     <repos>
-        <repo name="c7buildroot" path="http://armv7.dev.centos.org/repodir/c7-buildroot/"></repo>
-        <repo name="c7pass1" path="http://armv7.dev.centos.org/repodir/c7-pass-1/"></repo>
-        <repo name="comps" path="http://armv7.dev.centos.org/repodir/comps/"></repo>
+        <repo name="f22arm" path="ftp://192.168.1.3/f22arm/"></repo>
+        <repo name="f22armupdates" path="ftp://192.168.1.3/f22armupdates/"></repo>
     </repos>
     <workdir>/tmp/temp</workdir>
     <extlinuxconf>false</extlinuxconf>

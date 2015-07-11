@@ -11,6 +11,8 @@
     </partitions>
     
     <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
         <group>@core</group>
         <package></package>
     </packages>

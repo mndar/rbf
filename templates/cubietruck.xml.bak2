@@ -11,6 +11,7 @@
     
     <packages>
         <installer>yum</installer>
+        <releasever>7</releasever>
         <group></group>
         <package>bash,systemd</package>
     </packages>
