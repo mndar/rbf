@@ -9,7 +9,7 @@ Being developed for Google Summer Of Code 2015
 *Mentor: Ian McLeod [imcleod at redhat.com]*
 
 
-- This project is still in the development stage. I've tested it with Fedora 21 ARM and CentOS 7 ARM repositories.
+- This project is still in the development stage. I've tested it with Fedora 22 ARM (Dnf), Fedora 21 ARM and CentOS 7 ARM repositories.
 - Default **root** password has now been set to **password1234** in all templates.
 
 **Tested Emulators**
