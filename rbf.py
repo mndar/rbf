@@ -851,18 +851,19 @@ class BoardTemplateParser(object):
                 self.showFiles(directory+os.sep+c, depth+1)
 
     def generateBoardTemplate(self):
+        """Generates minimal board template for new rootfs"""
         doc = Document()
         root = doc.createElement("template")
         board = doc.createElement("board")
         distro = doc.createElement("distro")
-        
+
         board.appendChild(doc.createTextNode(self.boardName))
         distro.appendChild(doc.createTextNode(self.linuxDistro))
-        
+
         doc.appendChild(root)
         for i in [board, distro]:
             root.appendChild(i)
-        
+
         return doc.toprettyxml()
 
     def finalActions(self):
@@ -878,7 +879,7 @@ class BoardTemplateParser(object):
         templateFile = open(rbfConfigPath + "/board.xml", "w")
         templateFile.write(self.generateBoardTemplate())
         templateFile.close()
-        
+
         #copy kernel upgrade script to /usr/sbin/
         if os.path.isfile("kernelup.d/rbf"+self.boardName+".sh") and \
            os.access("kernelup.d/rbf"+self.boardName+".sh", os.X_OK):
@@ -886,7 +887,7 @@ class BoardTemplateParser(object):
                                  + self.workDir + "/usr/sbin/\n")
             self.rbfScript.write(self.getShellErrorString(\
                                             BoardTemplateParser.KERNELUP_ERROR))
-                                           
+
         logging.info("Copying Etc Overlay: " + self.etcOverlay)
         #show files being copied from etcOverlay. This is important because we
         #are not automatically clearing the etc overlay after each
