@@ -18,6 +18,8 @@ Explanation
 
 - ***$ROOT*** is the path to your root device (can be UUID too) determined by reading /proc/cmdline. Use this to setup your root parameter in the boot config.
 
+- Use ***exit 0*** to tell the dnf/yum plugin that the kernel upgrade script executed successfully. Any other exit code will result in the following message "Error Execuing Kernel Up Script for (boardname)".
+
 Examples
 ---------
 - ***kernelup.d/rbfcubietruck.sh***: Adds a kernel entry to */boot/extlinux/extlinux.conf*. This script is not required if you have the *extlinux-bootloader* package installed. You can use this as an example for writing board scripts for other boards.
