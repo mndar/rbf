@@ -13,7 +13,7 @@ import sys
 import platform
 import logging
 import uuid
-import xml.dom.minidom
+from xml.dom.minidom import parse, Document
 from xml.parsers.expat import ExpatError
 from rbfutils import RbfUtils
 
@@ -106,7 +106,8 @@ class BoardTemplateParser(object):
     ROOT_PASS_ERROR, ROOT_SSH_KEY_ERROR, SELINUX_ERROR, BOARD_SCRIPT_ERROR,\
     FINALIZE_SCRIPT_ERROR, EXTLINUXCONF_ERROR, NO_ETC_OVERLAY,\
     LOOP_DEVICE_DELETE_ERROR, LOSETUP_ERROR, PARTPROBE_ERROR,\
-    COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR = range(200, 224)
+    COULD_NOT_CREATE_WORKDIR, KERNEL_PACKAGE_INSTALL_ERROR, KERNELUP_ERROR\
+     = range(200, 225)
 
     RbfScriptErrors = {
         DD_ERROR: "DD_ERROR: Error While Creating Image File",
@@ -142,7 +143,8 @@ class BoardTemplateParser(object):
         COULD_NOT_CREATE_WORKDIR: "COULD_NOT_CREATE_WORKDIR: Could not create "\
         + "work directory",
         KERNEL_PACKAGE_INSTALL_ERROR: "KERNEL_PACKAGE_INSTALL_ERROR: Error "\
-         + "installing Kernel Packages"
+         + "installing Kernel Packages",
+        KERNELUP_ERROR: "KERNELUP_ERROR: Could not copy kernel upgrade script"
     }
 
     def __init__(self, act, template):
@@ -205,7 +207,7 @@ class BoardTemplateParser(object):
         """Parses xmlTemplate"""
         logging.info("Parsing: " + self.xmlTemplate)
         try:
-            self.boardDom = xml.dom.minidom.parse(self.xmlTemplate)
+            self.boardDom = parse(self.xmlTemplate)
         except ExpatError as error:
             logging.error("Error Parsing XML Template File: " + str(error))
             return BoardTemplateParser.ERROR_PARSING_XML
@@ -848,13 +850,43 @@ class BoardTemplateParser(object):
             if os.path.isdir(directory+os.sep+c):
                 self.showFiles(directory+os.sep+c, depth+1)
 
+    def generateBoardTemplate(self):
+        doc = Document()
+        root = doc.createElement("template")
+        board = doc.createElement("board")
+        distro = doc.createElement("distro")
+        
+        board.appendChild(doc.createTextNode(self.boardName))
+        distro.appendChild(doc.createTextNode(self.linuxDistro))
+        
+        doc.appendChild(root)
+        for i in [board, distro]:
+            root.appendChild(i)
+        
+        return doc.toprettyxml()
+
     def finalActions(self):
         """Sets Hostname, RootPass, SELinux Status & runs Board &
         Finalize Script"""
-        hostnameConfig = open(self.etcOverlay+"/hostname", "w")
+        hostnameConfig = open(self.etcOverlay + "/hostname", "w")
         hostnameConfig.write(self.hostName)
         hostnameConfig.close()
 
+        #copy board details to rootfs
+        rbfConfigPath = self.etcOverlay + "/rbf"
+        self.makeDirTree(rbfConfigPath)
+        templateFile = open(rbfConfigPath + "/board.xml", "w")
+        templateFile.write(self.generateBoardTemplate())
+        templateFile.close()
+        
+        #copy kernel upgrade script to /usr/sbin/
+        if os.path.isfile("kernelup.d/rbf"+self.boardName+".sh") and \
+           os.access("kernelup.d/rbf"+self.boardName+".sh", os.X_OK):
+            self.rbfScript.write("cp kernelup.d/rbf" + self.boardName + ".sh " \
+                                 + self.workDir + "/usr/sbin/\n")
+            self.rbfScript.write(self.getShellErrorString(\
+                                            BoardTemplateParser.KERNELUP_ERROR))
+                                           
         logging.info("Copying Etc Overlay: " + self.etcOverlay)
         #show files being copied from etcOverlay. This is important because we
         #are not automatically clearing the etc overlay after each
