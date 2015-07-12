@@ -139,17 +139,29 @@ Setting *IPv6_rpfilter=no* in /etc/firewalld/firewalld.conf fixes the problem fo
     
         commonscripts/writeimage.sh centos.img /dev/sdd
 
-**Usage of yumplugins/extlinuxconf.py:**
+**Usage of yumplugins/rbfkernelup.py:**
 
-This plugin appends entries to /boot/extlinux/extlinux.conf everytime kernel-core is installed or updated.
-Thus making your new kernel bootable.
+This plugin executes kernelup script rbf(boardname).sh everytime kernel-core is installed or updated.
+To learn how to write a kernelup script, refer [this](doc/KERNELUP_README.md) document.
+
 
 - Copy yumplugins/extlinuxconf.py to /usr/lib/yum-plugins/
   and  yumplugins/extlinuxconf.conf to /etc/yum/pluginconf.d/
   
-        cp yumplugins/extlinuxconf.py /usr/lib/yum-plugins/
-        cp yumplugins/extlinuxconf.conf /etc/yum/pluginconf.d/
+        cp yumplugins/rbfkernelup.py /usr/lib/yum-plugins/
+        cp yumplugins/rbfkernelup.conf /etc/yum/pluginconf.d/
     
+**Usage of dnfplugins/rbfkernelup.py:**
+
+This plugin executes kernelup script rbf(boardname).sh everytime kernel-core is installed or updated.
+To learn how to write a kernelup script, refer [this](doc/KERNELUP_README.md) document.
+
+- Copy dnfplugins/rbfkernelup.py to /usr/lib/python2.7/site-packages/dnf-plugins/
+  and  dnfplugins/rbfkernelup.conf to /etc/dnf/plugins/
+  
+        cp rbfkernelup.py /usr/lib/python2.7/site-packages/dnf-plugins/
+        cp rbfkernelup.conf /etc/dnf/plugins/
+
 
 **About contents of the directory 'files':**
 - The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
