@@ -65,15 +65,12 @@ If you have any of the untested boards, please test the RootFS Build Factory and
         ./rbf.py build templates/cubietruck.xml
 
 - Follow the output of the script. 
-  Presently it prompts you to press Enter after every step.
-  The script uses the yum command to install packages. The yum command asks you whether to continue with y/d/N after resolving dependencies.
 
 - Once the image is generated write it your microsd card using dd or dcfldd
 
-        dcfldd if=cubietruck-centos-image.img of=/dev/sdb 
+        dcfldd if=cubietruck-centos-image.img of=/dev/sdb bs=1M
 
-- Just login as root. No password is required. 
-  The default config of u-boot is set as console=ttyS0,115200
+- The default config of u-boot is set as console=ttyS0,115200
   If you want to see the boot messages you will need a USB to TTL Cable.
   The provided u-boot for cubietruck supports HDMI console. However USB Keyboard gives some problems.
     
