@@ -163,6 +163,7 @@ class BoardTemplateParser(object):
         self.repoNames = []
         self.rbfScript = open("rbf.sh", "w")
         self.initramfsScript = None
+        self.boardScript = None
         self.cleanupScript = None
         self.rootSshKey = "none"
         self.rootFiles = "none"
@@ -867,8 +868,7 @@ class BoardTemplateParser(object):
         return doc.toprettyxml()
 
     def finalActions(self):
-        """Sets Hostname, RootPass, SELinux Status & runs Board &
-        Finalize Script"""
+        """Sets Hostname, RootPass, SELinux Status"""
         hostnameConfig = open(self.etcOverlay + "/hostname", "w")
         hostnameConfig.write(self.hostName)
         hostnameConfig.close()
@@ -925,6 +925,13 @@ class BoardTemplateParser(object):
         self.rbfScript.write(self.getShellErrorString(\
                                              BoardTemplateParser.SELINUX_ERROR))
 
+        self.rbfScript.write("exit 0\n")
+        self.rbfScript.close()
+        return 0
+
+    def callBoardScripts(self):
+        """Call Board Script and Finalize Script"""
+        self.boardScript = open("boardscript.sh", "w")
         if os.path.isfile("boards.d/"+self.boardName+".sh") and \
            os.access("boards.d/"+self.boardName+".sh", os.X_OK):
             boardScriptCommand = "./boards.d/" + self.boardName + ".sh " + \
@@ -932,23 +939,22 @@ class BoardTemplateParser(object):
             " " + self.workDir + " " + self.rootFiles + " " + \
             self.rootDeviceIndex + " " + self.rootDeviceUUID + "\n"
             logging.info("Board Script: " + boardScriptCommand)
-            self.rbfScript.write("echo [INFO ]  $0 Running Board Script: " + \
+            self.boardScript.write("echo [INFO ]  $0 Running Board Script: " + \
                                  boardScriptCommand)
-            self.rbfScript.write(boardScriptCommand)
-            self.rbfScript.write(self.getShellErrorString(\
+            self.boardScript.write(boardScriptCommand)
+            self.boardScript.write(self.getShellErrorString(\
                                         BoardTemplateParser.BOARD_SCRIPT_ERROR))
         else:
             logging.info("Board Script Not Found or Not Executable")
 
         logging.info("Finalize Script: " + self.finalizeScript)
-        self.rbfScript.write("echo [INFO ]  $0 Running Finalize Script: " + \
+        self.boardScript.write("echo [INFO ]  $0 Running Finalize Script: " + \
                               self.finalizeScript +"\n")
-        self.rbfScript.write(self.finalizeScript+"\n")
-        self.rbfScript.write(self.getShellErrorString(\
+        self.boardScript.write(self.finalizeScript+"\n")
+        self.boardScript.write(self.getShellErrorString(\
                                      BoardTemplateParser.FINALIZE_SCRIPT_ERROR))
-        self.rbfScript.write("exit 0\n")
-        self.rbfScript.close()
-        return 0
+        self.boardScript.write("exit 0\n")
+        self.boardScript.close()
 
     def getPartition(self, mountpoint):
         """Gets Partition UUID/LABEL From Dict"""
@@ -1138,8 +1144,8 @@ class BoardTemplateParser(object):
             if cleanupRet != 0:
                 logging.error("Did Not Execute Clean Up Cleanly")
         logging.info("If you need any help, please provide rbf.log rbf.sh "\
-                     + "initramfs.sh cleanup.sh " + self.xmlTemplate\
-                     + " and the above output.")
+                     + "initramfs.sh cleanup.sh boardscript.sh " + \
+                     self.xmlTemplate + " and the above output.")
 
 
 if __name__ == "__main__":
@@ -1225,6 +1231,13 @@ if __name__ == "__main__":
             logging.error(boardParser.RbfScriptErrors[initramfsRet])
             boardParser.cleanUp()
             sys.exit(initramfsRet)
+
+        boardParser.callBoardScripts()
+        boardScriptRet = subprocess.call(["/usr/bin/bash", "boardscript.sh"])
+        if boardScriptRet != 0:
+            logging.error(boardParser.RbfScriptErrors[boardScriptRet])
+            boardParser.cleanUp()
+            sys.exit(boardScriptRet)
 
     boardParser.cleanUp()
     sys.exit(0)
