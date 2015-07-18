@@ -32,7 +32,7 @@
         </network>        
     </config>
     
-    <etcoverlay>../../</etcoverlay>
+    <etcoverlay>.</etcoverlay>
     <finalizescript>./boards.d/finalize.sh</finalizescript>
     
     <distro>centos</distro>
