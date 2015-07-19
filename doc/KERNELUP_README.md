@@ -22,4 +22,4 @@ Explanation
 
 Examples
 ---------
-- ***kernelup.d/rbfcubietruck.sh***: Adds a kernel entry to */boot/extlinux/extlinux.conf*. This script is not required if you have the *extlinux-bootloader* package installed. You can use this as an example for writing board scripts for other boards.
+- ***kernelup.d/rbfcubietruck.sh***: Adds a kernel entry to */boot/extlinux/extlinux.conf*. This script is not required if you have the *extlinux-bootloader* package installed. You can use this as an example for writing kernel upgrade scripts for other boards.
