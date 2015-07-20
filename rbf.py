@@ -811,8 +811,8 @@ class BoardTemplateParser(object):
                                  "/lib/firmware &>> rbf.log \n")
             self.rbfScript.write(self.getShellExitString(\
                                        BoardTemplateParser.COPY_FIRMWARE_ERROR))
-            self.rbfScript.write("cp -rv " + self.firmwareDir + "/* " + \
-                                  self.workDir + "/lib/firmware &>> rbf.log \n")
+            self.rbfScript.write("cp -rv " + self.firmwareDir + " " + \
+                                 self.workDir + "/lib/firmware/ &>> rbf.log \n")
             self.rbfScript.write(self.getShellExitString(\
                                        BoardTemplateParser.COPY_FIRMWARE_ERROR))
         return 0
