@@ -171,3 +171,6 @@ To learn how to write a kernelup script, refer [this](doc/KERNELUP_README.md) do
 
 - files/wandboard* have been taken from http://wiki.wandboard.org/index.php/Sdcard-images
 
+- files/lamobor1/* have been taken from http://www.igorpecovnik.com/2014/09/07/banana-pi-debian-sd-image/
+
+
