@@ -1,0 +1,53 @@
+<template>    
+    <board>lamobor1</board>
+    <image size="4G" type="raw" path="lamobor1-centos-image.img"></image>
+    <partitions>
+        <partition size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
+        <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>        
+    </partitions>
+    
+    <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
+        <group>core</group>
+        <package>net-tools</package>
+    </packages>
+
+    <stage1loader>none</stage1loader>
+    <uboot>files/lamobor1/u-boot-sunxi-with-spl.bin</uboot>
+    <rootfiles>none</rootfiles>
+    <firmware>files/lamobor1/firmware/4.1.2-lamobo-r1</firmware>
+    
+    <kernel type="custom">
+        <image>files/lamobor1/vmlinuz-4.1.2-lamobo-r1</image>
+        <initrd>files/lamobor1/initramfs-4.1.2-lamobo-r1.img</initrd>
+        <modules>files/lamobor1/4.1.2-lamobo-r1</modules>
+        <dtbdir>files/lamobor1/dtb-4.1.2-lamobo-r1</dtbdir>
+    </kernel>    
+
+    <config>
+        <hostname>lamobor1</hostname>
+        <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>centos</distro>
+    <repos>
+        <repo name="c7buildroot" path="http://armv7.dev.centos.org/repodir/c7-buildroot/"></repo>
+        <repo name="c7pass1" path="http://armv7.dev.centos.org/repodir/c7-pass-1/"></repo>
+        <repo name="comps" path="http://armv7.dev.centos.org/repodir/comps/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>true</extlinuxconf>
+    
+ </template>
+ 
