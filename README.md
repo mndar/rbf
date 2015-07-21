@@ -28,6 +28,7 @@ Being developed for Google Summer Of Code 2015
 - Pandaboard
 - CompuLab TrimSlice
 - Beaglebone
+- Banana/Lamobo R1
 
 **Unsupported Boards**
 - Refer [this](doc/ADD_SUPPORT_README.md) document to learn how to add support for more boards.
