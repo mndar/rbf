@@ -14,7 +14,7 @@ from rbfutils import RbfUtils
 class BoardInstaller(object):
     """Board Installer"""
     BOARDS_DIR = "boards.d"
-    SPECIAL_BOARDS = ['odroidc1', 'rpi2']
+    SPECIAL_BOARDS = ['odroidc1', 'rpi2', 'lamobor1']
     MLO_BOARDS = ['beaglebone', 'pandaboard']
     NOT_ROOT, SHOW_HELP, NOT_FILE, NO_WRITE_PERMISSION, NO_BOARDS, NO_FILES = \
                                                                      range(0, 6)
