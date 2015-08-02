@@ -24,7 +24,7 @@
     <kernel type="custom">
         <image>files/rpi2/kernel7.img</image>
         <initrd>none</initrd>
-        <modules>files/rpi2/3.18.14-v7+</modules>
+        <modules>files/rpi2/4.0.9-v7+</modules>
         <dtbdir>none</dtbdir>
     </kernel>    
 
