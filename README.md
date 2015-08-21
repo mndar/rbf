@@ -8,6 +8,7 @@ Developed for Google Summer Of Code 2015
 
 *Mentor: Ian McLeod [imcleod at redhat.com]*
 
+RootFS Build Factory is a set of tools and scripts to generate rootfs images for 32-bit ARM Boards.
 - Tested with Fedora 22 ARM (Dnf), Fedora 21 ARM and CentOS 7 ARM repositories.
 - Default **root** password has now been set to **password1234** in all templates.
 
