@@ -1,6 +1,6 @@
 RootFS Build Factory
 ====================
-Being developed for Google Summer Of Code 2015
+Developed for Google Summer Of Code 2015
 ----------------------------------------------
 *Organization: CentOS*
 
@@ -8,8 +8,7 @@ Being developed for Google Summer Of Code 2015
 
 *Mentor: Ian McLeod [imcleod at redhat.com]*
 
-
-- This project is still in the development stage. I've tested it with Fedora 22 ARM (Dnf), Fedora 21 ARM and CentOS 7 ARM repositories.
+- Tested with Fedora 22 ARM (Dnf), Fedora 21 ARM and CentOS 7 ARM repositories.
 - Default **root** password has now been set to **password1234** in all templates.
 
 **Tested Emulators**
