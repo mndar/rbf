@@ -162,7 +162,7 @@ To learn how to write a kernelup script, refer [this](doc/KERNELUP_README.md) do
 
 
 **About contents of the directory 'files':**
-- The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdlinux.txt from F21
+- The files in the directory files/rpi2 have been taken from https://github.com/raspberrypi/firmware.git. config.txt and cmdline.txt from F21
 
 - files/{cubietruck,bananapi,cubieboard,cubieboard2,beaglebone,pandaboard} have been cross compiled from the u-boot git repo git://git.denx.de/u-boot.git
 
