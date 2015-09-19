@@ -899,8 +899,7 @@ class BoardTemplateParser(object):
                                          BoardTemplateParser.ETC_OVERLAY_ERROR))
 
         logging.info("Setting root password")
-        self.rbfScript.write("expect rootpass.exp " + self.workDir + " " + \
-                             self.rootPass + " &>> rbf.log\n")
+        self.rbfScript.write("echo \"root:" + self.rootPass + "\" | chpasswd --root " + self.workDir + " &>> rbf.log\n")
         self.rbfScript.write(self.getShellErrorString(\
                                            BoardTemplateParser.ROOT_PASS_ERROR))
 
@@ -1171,7 +1170,7 @@ if __name__ == "__main__":
 
     if checkCommandExistsAccess(['echo', 'dd', 'parted', 'read', 'losetup', \
     'mount', 'mkdir', 'rm', 'cat', 'cp', 'rpm', 'sed', 'chroot', \
-    'partprobe', 'expect']):
+    'partprobe', 'chpasswd']):
         logging.info("All Commands Found. Continuing")
     else:
         logging.error("Cannot Continue")
