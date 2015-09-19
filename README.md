@@ -11,6 +11,7 @@ Developed for Google Summer Of Code 2015
 RootFS Build Factory is a set of tools and scripts to generate rootfs images for 32-bit ARM Boards.
 - Tested with Fedora 22 ARM (Dnf), Fedora 21 ARM and CentOS 7 ARM repositories.
 - Default **root** password has now been set to **password1234** in all templates.
+- For now, disable SELinux while generating an image.
 
 **Tested Emulators**
 - Qemu [HowTo](doc/QEMU_README.md)
@@ -102,6 +103,18 @@ If you have any of the untested boards, please test the RootFS Build Factory and
 
 - The dialog based UI uses *space* completion instead of *tab* completion. It takes some time to get used to.
 
+**Usage of rbfinstaller.py**
+- If you have generated a Qemu image i.e. one with no bootloader, you can use rbfinstaller.py to create a microSD for boards where the only change required is the bootloader.
+
+- In case of SPECIAL_BOARDS (RPi2, Odroid, Lamobo R1*), Writes RBF Generated Image to microSD
+
+- In case of Other Boards: Writes Generic/QEMU image to microSD and then Board Specific U-Boot to microSD
+
+- Usage
+        
+        ./rbfinstaller.py <imagePath> <device>
+        ./rbfinstaller.py centos.img /dev/sdb
+        
 **Known Issues:**
 
 - This happens with the Cubietruck at times. It has happened to me twice after plugging in the HDMI cable.
