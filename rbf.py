@@ -899,7 +899,8 @@ class BoardTemplateParser(object):
                                          BoardTemplateParser.ETC_OVERLAY_ERROR))
 
         logging.info("Setting root password")
-        self.rbfScript.write("echo \"root:" + self.rootPass + "\" | chpasswd --root " + self.workDir + " &>> rbf.log\n")
+        self.rbfScript.write("echo \"root:" + self.rootPass + "\" | chpasswd " \
+                             + "--root " + self.workDir + " &>> rbf.log\n")
         self.rbfScript.write(self.getShellErrorString(\
                                            BoardTemplateParser.ROOT_PASS_ERROR))
 
