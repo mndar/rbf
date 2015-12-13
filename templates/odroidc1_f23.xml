@@ -1,0 +1,51 @@
+<template>    
+    <board>odroidc1</board>
+    <image size="3G" type="raw" path="odroidc1-f23-image.img"></image>
+    <partitions>
+        <partition size="300M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="512M" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <installer>dnf</installer>
+        <releasever>23</releasever>
+        <group>core</group>
+        <package></package>
+    </packages>
+
+    <stage1loader>files/odroidc1/bl1.bin.hardkernel</stage1loader>
+    <uboot>files/odroidc1/u-boot.bin</uboot>
+    <rootfiles>files/odroidc1/boot.ini</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="custom">
+        <image>files/odroidc1/uImage</image>
+        <initrd>files/odroidc1/uInitrd</initrd>
+        <modules>files/odroidc1/3.10.66-49</modules>
+        <dtbdir>files/odroidc1/meson8b_odroidc.dtb</dtbdir>
+    </kernel>    
+
+    <config>
+        <hostname>odroidc1</hostname>
+        <selinux>permissive</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>centos</distro>
+    <repos>
+        <repo name="f23arm" path="http://download.fedoraproject.org/pub/fedora/linux/releases/23/Everything/armhfp/os/"/>
+		<repo name="f23armupdates" path="http://download.fedoraproject.org/pub/fedora/linux/updates/23/armhfp/"/>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>false</extlinuxconf>
+    
+ </template>
+ 

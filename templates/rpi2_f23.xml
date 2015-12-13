@@ -1,0 +1,51 @@
+<template>    
+    <board>rpi2</board>
+    <image size="3G" type="raw" path="rpi2-f23-image.img"></image>
+    <partitions>
+        <partition size="300M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="512M" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <installer>dnf</installer>
+        <releasever>23</releasever>
+        <group>core</group>
+        <package></package>
+    </packages>
+
+    <stage1loader>none</stage1loader>
+    <uboot>none</uboot>
+    <rootfiles>files/rpi2/boot_rpi2.tar.xz</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="custom">
+        <image>files/rpi2/kernel7.img</image>
+        <initrd>none</initrd>
+        <modules>files/rpi2/4.0.9-v7+</modules>
+        <dtbdir>none</dtbdir>
+    </kernel>    
+
+    <config>
+        <hostname>rpi2</hostname>
+        <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>f23</distro>
+    <repos>
+        <repo name="f23arm" path="http://download.fedoraproject.org/pub/fedora/linux/releases/23/Everything/armhfp/os/"></repo>
+        <repo name="f23armupdates" path="http://download.fedoraproject.org/pub/fedora/linux/updates/23/armhfp/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>false</extlinuxconf>
+    
+ </template>
+ 

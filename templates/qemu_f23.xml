@@ -1,0 +1,47 @@
+<template>    
+    <board>qemu</board>
+    <image size="3G" type="raw" path="qemu-f23-image.img"></image>
+    <partitions>
+        <partition size="300M" type="primary" fs="ext3" mountpoint="/boot"></partition>
+        <partition size="512M" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <installer>dnf</installer>
+        <releasever>23</releasever>
+        <group>core</group>
+        <package></package>
+    </packages>
+
+    <stage1loader>none</stage1loader>
+    <uboot>none</uboot>
+    <rootfiles>none</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="stock">
+    </kernel>    
+
+    <config>
+        <hostname>qemu</hostname>
+        <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>f23</distro>
+    <repos>
+        <repo name="f23arm" path="http://ftp.kaist.ac.kr/fedora/releases/23/Everything/armhfp/os/"></repo>
+        <repo name="f23armupdates" path="http://ftp.kaist.ac.kr/fedora/updates/23/armhfp/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>true</extlinuxconf>
+    
+ </template>
+ 

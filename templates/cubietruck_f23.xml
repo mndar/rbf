@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<template>
+	<board>cubietruck</board>
+	<image path="cubietruck-f23-image.img" size="3G" type="raw"/>
+	<partitions>
+		<partition fs="ext3" mountpoint="/boot" size="300M" type="primary"/>
+		<partition fs="swap" mountpoint="swap" size="512M" type="primary"/>
+		<partition fs="ext4" mountpoint="/" size="2G" type="primary"/>
+	</partitions>
+	<packages>
+	    <installer>dnf</installer>
+	    <releasever>23</releasever>
+		<group>core</group>
+		<package></package>
+	</packages>
+	<stage1loader>none</stage1loader>
+	<uboot>files/cubietruck/u-boot-sunxi-with-spl.bin</uboot>
+	<rootfiles>none</rootfiles>
+	<firmware>none</firmware>
+	<kernel type="stock"/>
+	<config>
+		<hostname>cubietruck</hostname>
+		<selinux>disabled</selinux>
+		<rootpass>password1234</rootpass>
+		<rootsshkey>none</rootsshkey>
+		<network>
+			<interface config="dhcp" name="eth0"/>
+		</network>
+	</config>
+	<etcoverlay>./etc</etcoverlay>
+	<finalizescript>./boards.d/finalize.sh</finalizescript>
+	<distro>f23</distro>
+	<repos>
+		<repo name="f23arm" path="http://download.fedoraproject.org/pub/fedora/linux/releases/23/Everything/armhfp/os/"/>
+		<repo name="f23armupdates" path="http://download.fedoraproject.org/pub/fedora/linux/updates/23/armhfp/"/>
+	</repos>
+	<workdir>/tmp/temp</workdir>
+	<extlinuxconf>true</extlinuxconf>
+</template>
