@@ -254,6 +254,13 @@ class BoardTemplateParser(object):
                 + self.RbfScriptErrors[exitCode] + ";"\
                 + " read -p \"Press Enter To Continue\"; fi\n\n"
 
+    def getPackageErrorString(self, exitCode):
+        """Generates Shell Error command. Used to check command execution"""
+        return "if [ $? != 0 ]; then echo [INFO ]  "\
+                + self.RbfScriptErrors[exitCode] + "; read -p "\
+                + "\"Retry (y/n)? \" -n 1 ACTION; if [ \"$ACTION\" == \"y\" ]; "\
+                + "then continue; else break; fi; else break; fi\n"
+
     def createImage(self):
         """Creates Image File"""
         self.rbfScript.write("echo [INFO ]   $0 Detaching Loopback Device: "
@@ -703,24 +710,28 @@ class BoardTemplateParser(object):
         if len(packageGroupsString) > 0:
             self.rbfScript.write("echo [INFO ]  $0 Installing Package Groups."\
             + " Please Wait\n")
+            self.rbfScript.write("while (true)\ndo\n")
             self.rbfScript.write(self.packageInstaller + " " + \
                     repoEnableString + \
                     " --installroot=" + self.workDir + \
                     " --releasever=" + self.releaseVer + " groupinstall -y " + \
                     packageGroupsString+" 2>> rbf.log\n")
-            self.rbfScript.write(self.getShellErrorString(\
+            self.rbfScript.write(self.getPackageErrorString(\
                                        BoardTemplateParser.GROUP_INSTALL_ERROR))
+            self.rbfScript.write("done\n\n")
 
         if len(packagesString) > 0:
             self.rbfScript.write("echo [INFO ]  $0 Installing Packages."\
             + " Please Wait\n")
+            self.rbfScript.write("while (true)\ndo\n")
             self.rbfScript.write(self.packageInstaller + " " + \
                     repoEnableString + \
                     " --installroot=" + self.workDir + \
                     " --releasever=" + self.releaseVer + " install -y " + \
                     packagesString+" 2>> rbf.log\n")
-            self.rbfScript.write(self.getShellErrorString(\
+            self.rbfScript.write(self.getPackageErrorString(\
                                      BoardTemplateParser.PACKAGE_INSTALL_ERROR))
+            self.rbfScript.write("done\n\n")
         return 0
 
     def installKernel(self):
@@ -791,13 +802,16 @@ class BoardTemplateParser(object):
                                        + r + " "
                 self.rbfScript.write("echo [INFO ]  $0 Installing Kernel"\
                 + " Packages. Please Wait\n")
+                self.rbfScript.write("while (true)\ndo\n")
                 self.rbfScript.write(self.packageInstaller + " " + \
                             repoEnableString + " --installroot=" + \
                             self.workDir +  " --releasever=" + self.releaseVer \
                             + " install -y " \
                             + "kernel dracut-config-generic 2>> rbf.log\n")
-                self.rbfScript.write(self.getShellErrorString(\
+                self.rbfScript.write(self.getPackageErrorString(\
                               BoardTemplateParser.KERNEL_PACKAGE_INSTALL_ERROR))
+                self.rbfScript.write("done\n\n")
+
         elif self.kernelType == "none":
             logging.info("Not Installing Any Kernel")
 
