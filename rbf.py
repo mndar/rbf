@@ -91,13 +91,13 @@ class BoardTemplateParser(object):
 
     INCORRECT_ARGUMENTS, ERROR_PARSING_XML, ERROR_PARSING_XML_TAGS,\
     ERROR_IMAGE_SIZE, ERROR_IMAGE_FILE, INVALID_PARTITION_DATA, NO_PACKAGES,\
-    NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS, NO_UBOOT,\
+    NO_KERNEL_TYPE, INCORRECT_REPOSITORY, IMAGE_EXISTS,\
     LOGICAL_PART_ERROR, PRIMARY_PART_ERROR, NO_PARTITIONS_FOUND,\
     PRIMARY_PARTITION_SIZES_ERROR, LOGICAL_PARTITION_SIZES_ERROR, FSTAB_ERROR,\
     CLEANUP_ERROR, NOT_ROOT, COMMANDS_NOT_FOUND, SYS_MKFS_COMMANDS_NOT_FOUND,\
     NO_FIRMWARE_FOUND, TEMPLATE_NOT_FOUND, TOTAL_PARTITIONS_ERROR,\
     NO_ROOT_FOUND, SSH_KEY_NOT_FOUND, NO_NETWORK, NO_REPOSITORY, NO_INSTALLER\
-     = range(100, 129)
+     = range(100, 128)
 
     DD_ERROR, PARTED_ERROR,\
     LOOP_DEVICE_CREATE_ERROR, PARTITION_DOES_NOT_EXIST, MOUNTING_ERROR,\
@@ -726,8 +726,7 @@ class BoardTemplateParser(object):
     def installKernel(self):
         """Installing Kernel"""
         if self.ubootPath != "none" and not os.path.exists(self.ubootPath):
-            logging.error("Could Not Find uboot in:" + self.ubootPath)
-            return BoardTemplateParser.NO_UBOOT
+            logging.info("Could Not Find uboot in:" + self.ubootPath)
 
         logging.info("Installing Kernel")
         kernelDom = self.boardDom.getElementsByTagName("kernel")
