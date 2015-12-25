@@ -9,7 +9,7 @@ Developed for Google Summer Of Code 2015
 *Mentor: Ian McLeod [imcleod at redhat.com]*
 
 RootFS Build Factory is a set of tools and scripts to generate rootfs images for 32-bit ARM Boards.
-- Tested with Fedora 22 ARM (Dnf), Fedora 21 ARM and CentOS 7 ARM repositories.
+- Tested with Fedora 23 ARM (Dnf) and CentOS 7 ARM repositories.
 - Default **root** password has now been set to **password1234** in all templates.
 - For now, disable SELinux while generating an image.
 
@@ -38,10 +38,7 @@ If you have any of the untested boards, please test the RootFS Build Factory and
 
 **Note:**
 - You need to be root to use RootFS Build Factory
-- One of the initial checks rbf.py makes is if you have the required programs to generate images. 'expect' is now required to set the root password. Install it using
-        
-        yum install expect
-        
+- One of the initial checks rbf.py makes is if you have the required programs to generate images.
 - If you want to use rbfdialog.py, 'dialog' is required as a dependency of python2-pythondialog (gsoc2015 repo). Install it using
 
         yum install dialog
