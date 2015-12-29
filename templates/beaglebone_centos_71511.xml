@@ -1,0 +1,47 @@
+<template>    
+    <board>beaglebone</board>
+    <image size="3G" type="raw" path="beaglebone-image-local.img"></image>
+    <partitions>
+        <partition size="300M" type="primary" fs="ext3" mountpoint="/boot"></partition>
+        <partition size="512M" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
+        <group>core</group>
+        <package></package>
+    </packages>
+
+    <stage1loader>files/beaglebone/MLO</stage1loader>
+    <uboot>files/beaglebone/u-boot.img</uboot>
+    <rootfiles>none</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="stock">
+    </kernel>
+    <config>
+        <hostname>beaglebone</hostname>
+        <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>centos</distro>
+    <repos>
+        <repo name="c7" path="http://dev.centos.org/centos/7/os/armhfp/"></repo>
+        <repo name="c7extras" path="http://dev.centos.org/centos/7/extras/armhfp/"></repo>
+        <repo name="kernel" path="http://armv7.dev.centos.org/repodir/arm-kernels/4.2.3/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>true</extlinuxconf>
+    
+ </template>
+ 
