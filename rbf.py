@@ -1153,7 +1153,7 @@ class BoardTemplateParser(object):
         self.cleanupScript.write("exit 0\n")
         self.cleanupScript.close()
         if self.action == "build":
-            cleanupRet = subprocess.call(["/usr/bin/bash", "cleanup.sh"])
+            cleanupRet = subprocess.call(["bash", "cleanup.sh"])
             if cleanupRet != 0:
                 logging.error("Did Not Execute Clean Up Cleanly")
         logging.info("If you need any help, please provide rbf.log rbf.sh "\
@@ -1229,7 +1229,7 @@ if __name__ == "__main__":
 
     if action == "build":
         logging.info("Running RootFS Build Factory script")
-        rbfRet = subprocess.call(["/usr/bin/bash", "rbf.sh"])
+        rbfRet = subprocess.call(["bash", "rbf.sh"])
         if rbfRet == 0:
             logging.info("Successfully Executed rbf.sh")
         else:
@@ -1239,14 +1239,14 @@ if __name__ == "__main__":
 
         boardParser.createInitramfs()
         boardParser.configureExtLinux()
-        initramfsRet = subprocess.call(["/usr/bin/bash", "initramfs.sh"])
+        initramfsRet = subprocess.call(["bash", "initramfs.sh"])
         if initramfsRet != 0:
             logging.error(boardParser.RbfScriptErrors[initramfsRet])
             boardParser.cleanUp()
             sys.exit(initramfsRet)
 
         boardParser.callBoardScripts()
-        boardScriptRet = subprocess.call(["/usr/bin/bash", "boardscript.sh"])
+        boardScriptRet = subprocess.call(["bash", "boardscript.sh"])
         if boardScriptRet != 0:
             logging.error(boardParser.RbfScriptErrors[boardScriptRet])
             boardParser.cleanUp()
