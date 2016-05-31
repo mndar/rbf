@@ -861,7 +861,11 @@ class BoardTemplateParser(object):
                 i = i + 1
             contentDisplayString = contentDisplayString + "-" + c
             logging.info(contentDisplayString)
+            os.chown(directory+os.sep+c, 0, 0)
+            if os.path.isfile(directory+os.sep+c):
+                os.chmod(directory+os.sep+c, 0644)
             if os.path.isdir(directory+os.sep+c):
+                os.chmod(directory+os.sep+c, 0755)
                 self.showFiles(directory+os.sep+c, depth+1)
 
     def generateBoardTemplate(self):
