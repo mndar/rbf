@@ -218,7 +218,8 @@ class BoardTemplateParser(object):
             self.workDir = self.getTagValue(self.boardDom, "workdir")
             self.finalizeScript = self.getTagValue(self.boardDom,\
                                                    "finalizescript")
-            self.loopDevice = subprocess.check_output(['losetup', '-f']).strip()
+            self.loopDevice = subprocess.Popen(['losetup', '-f'], \
+                                stdout=subprocess.PIPE).communicate()[0].strip()
             self.selinuxConf = self.getTagValue(self.boardDom, "selinux")
             self.etcOverlay = self.getTagValue(self.boardDom, "etcoverlay")
             self.linuxDistro = self.getTagValue(self.boardDom, "distro")
