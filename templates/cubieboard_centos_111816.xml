@@ -1,0 +1,49 @@
+<template>    
+    <board>cubieboard</board>
+    <image size="4G" type="raw" path="cubieboard-centos-image.img"></image>
+    <partitions>
+        <partition size="500M" type="primary" fs="ext3" mountpoint="/boot"></partition>
+        <partition size="1G" type="primary" fs="swap" mountpoint="swap"></partition>
+        <partition size="2G" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
+        <group>core</group>
+        <package>net-tools</package>
+    </packages>
+
+    <stage1loader>none</stage1loader>
+    <uboot>files/cubieboard/u-boot-sunxi-with-spl.bin</uboot>
+    <rootfiles>none</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="stock">
+    </kernel>    
+
+    <config>
+        <hostname>cubieboard</hostname>
+        <selinux>disabled</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>centos</distro>
+    <repos>
+	<repo name="centos-base" path="http://armv7.dev.centos.org/repos/7/os/armhfp/"></repo>
+        <repo name="centos-extras" path="http://armv7.dev.centos.org/repos/7/extras/armhfp/"></repo>
+        <!-- <repo name="centos-updates" path="http://armv7.dev.centos.org/repos/7/updates/armhfp/"></repo> -->
+        <repo name="centos-arm-kernels" path="http://armv7.dev.centos.org/repodir/arm-kernels/4.4.14-201/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>true</extlinuxconf>
+    
+ </template>
+ 
