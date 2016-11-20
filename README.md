@@ -22,6 +22,7 @@ RootFS Build Factory is a set of tools and scripts to generate rootfs images for
 - Raspberry Pi 2
 - Banana Pi (Tested By Nicolas [nicolas at shivaserv.fr])
 - Cubieboard 2 (Tested by David Tischler [david.tischler at mininodes.com]
+- Cubieboard (Tested by CoruNethron) [corunethron at gmail.com]
  
 **Untested Boards**
 - Cubieboard
