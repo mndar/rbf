@@ -25,7 +25,6 @@ RootFS Build Factory is a set of tools and scripts to generate rootfs images for
 - Cubieboard (Tested by CoruNethron) [corunethron at gmail.com]
  
 **Untested Boards**
-- Cubieboard
 - Wandboard{solo,dual,quad}
 - Pandaboard
 - CompuLab TrimSlice
