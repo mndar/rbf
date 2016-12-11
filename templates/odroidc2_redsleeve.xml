@@ -1,0 +1,47 @@
+<template>    
+    <board>odroidc2</board>
+    <image size="2G" type="raw" path="odroidc2-redsleeve-image.img"></image>
+    <partitions>
+        <partition size="256M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="1792M" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
+        <group>core</group>
+        <package>odroidc2-kernel,odroid-config,dosfstools,chrony,rng-tools</package>
+    </packages>
+
+    <stage1loader>files/odroidc2/bl1.bin.hardkernel</stage1loader>
+    <uboot>files/odroidc2/u-boot.bin</uboot>
+    <rootfiles>files/odroidc2/boot.ini</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="none"></kernel>    
+
+    <config>
+        <hostname>odroidc2</hostname>
+        <selinux>enforcing</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>redsleeve</distro>
+    <repos>
+        <repo name="base" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/7/base/"></repo>
+        <repo name="updates" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/7/updates/"></repo>
+        <repo name="extra" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/7/extra/"></repo>
+        <repo name="odroid" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/odroid/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>false</extlinuxconf>
+    
+ </template>
+ 
