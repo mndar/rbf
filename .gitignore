@@ -1,0 +1,12 @@
+# do not track images, if any
+/*.img
+/*.img.xz
+
+# do not track temp items
+/etc
+/boardscript.sh
+/cleanup.sh
+/initramfs.sh
+/rbf.log
+/rbf.sh
+*.pyc

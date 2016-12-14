@@ -1,0 +1,47 @@
+<template>    
+    <board>rpi</board>
+    <image size="1G" type="raw" path="rpi-redsleeve-image.img"></image>
+    <partitions>
+        <partition size="128M" type="primary" fs="vfat" mountpoint="/boot"></partition>
+        <partition size="896M" type="primary" fs="ext4" mountpoint="/"></partition>
+    </partitions>
+    
+    <packages>
+        <installer>yum</installer>
+        <releasever>7</releasever>
+        <group>core</group>
+        <package>chrony,raspberrypi-config,raspberrypi-firmware,raspberrypi-kernel,raspberrypi-kernel-firmware,rng-tools,selinux-policy-targeted</package>
+    </packages>
+
+    <stage1loader>none</stage1loader>
+    <uboot>none</uboot>
+    <rootfiles>none</rootfiles>
+    <firmware>none</firmware>
+    <kernel type="none"></kernel>    
+
+    <config>
+        <hostname>rpi</hostname>
+        <selinux>enforcing</selinux>
+        <rootpass>password1234</rootpass>
+        <rootsshkey>none</rootsshkey>
+        <network>
+            <interface name="eth0" config="dhcp">
+            </interface>
+        </network>        
+    </config>
+    
+    <etcoverlay>./etc</etcoverlay>
+    <finalizescript>./boards.d/finalize.sh</finalizescript>
+    
+    <distro>redsleeve</distro>
+    <repos>
+        <repo name="base" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/7/base/"></repo>
+        <repo name="updates" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/7/updates/"></repo>
+        <repo name="extra" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/7/extra/"></repo>
+        <repo name="raspberrypi" path="http://www.mirrorservice.org/sites/ftp.redsleeve.org/pub/el7-devel/el7/raspberrypi/"></repo>
+    </repos>
+    <workdir>/tmp/temp</workdir>
+    <extlinuxconf>false</extlinuxconf>
+    
+ </template>
+ 

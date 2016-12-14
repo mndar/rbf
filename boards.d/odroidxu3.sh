@@ -8,10 +8,14 @@ ROOTPARTINDEX=$6
 ROOTUUID=$7
 
 #Enter Custom Commands Below
-#echo "Extracting Boot Files"
-#tar Jxvomf $ROOTFILES -C $ROOTPATH
-#sed -i 's/mmcblk0p3/mmcblk0p'$ROOTPARTINDEX'/' $ROOTPATH/boot/cmdline.txt
-#sed -i 's/IPv6_rpfilter=yes/IPv6_rpfilter=no/' $ROOTPATH/etc/firewalld/firewalld.conf
+echo "Writing U-Boot Image"
+
+dd if=files/odroidxu3/bl1.bin of=$DISKIMAGE seek=1
+dd if=files/odroidxu3/bl2.bin of=$DISKIMAGE seek=31
+dd if=files/odroidxu3/u-boot.bin of=$DISKIMAGE seek=63
+dd if=files/odroidxu3/tzsw.bin of=$DISKIMAGE seek=719
+cp $ROOTFILES $ROOTPATH/boot/
+sed -i 's/UUID/UUID='$ROOTUUID'/' $ROOTPATH/boot/boot.ini
 
 echo "set autorelabel"
 touch $ROOTPATH/.autorelabel
@@ -24,5 +28,8 @@ dd if=/dev/zero of=$ROOTPATH/zero
 dd if=/dev/zero of=$ROOTPATH/boot/zero
 sync
 rm -f $ROOTPATH/zero $ROOTPATH/boot/zero
+
+echo "fix ppp install issue"
+mkdir -p $ROOTPATH/run/lock/ppp
 
 exit 0
